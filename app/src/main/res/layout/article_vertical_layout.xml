@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--一篇文章的垂直布局，上部为图片，下部为文章标题-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:scaleType="fitCenter"
+        android:src="@drawable/test"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="36dp"
+        android:id="@+id/article_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:layout_alignLeft="@+id/article_img"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:gravity="center_vertical"
+        android:text="Title"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/article_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>

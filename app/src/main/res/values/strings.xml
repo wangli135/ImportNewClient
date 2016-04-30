@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">ImportNew</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="java_android"><![CDATA[专注Java & Android技术分享]]></string>
+    <string name="homepage">首页</string>
+    <string name="all_artciles">所有文章</string>
+    <string name="hot_articles">热门文章</string>
+    <string name="more_contents">更多频道</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

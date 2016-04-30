@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?><!-- 首页文章块布局 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--文章分类-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/vertical_divider" />
+
+        <TextView
+            android:id="@+id/articles_category"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:gravity="center_vertical"
+            android:text="推荐阅读"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+    <!--五篇文章布局-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <!--三篇文章-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:orientation="horizontal">
+
+            <!--第一篇文章-->
+            <com.importnew.importnew.view.VerticalArticleView
+                android:id="@+id/first_article"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp" />
+
+            <!--第2和3篇文章-->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:padding="5dp">
+
+
+                <com.importnew.importnew.view.VerticalArticleView
+                    android:id="@+id/second_article"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.importnew.importnew.view.VerticalArticleView
+                    android:id="@+id/third_article"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <!--两篇文章-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <com.importnew.importnew.view.VerticalArticleView
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:id="@+id/fourth_article"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"></com.importnew.importnew.view.VerticalArticleView>
+
+
+            <com.importnew.importnew.view.VerticalArticleView
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:id="@+id/fifth_article"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"></com.importnew.importnew.view.VerticalArticleView>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
