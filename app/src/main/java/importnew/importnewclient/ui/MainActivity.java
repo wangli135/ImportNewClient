@@ -3,6 +3,7 @@ package importnew.importnewclient.ui;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,14 +20,18 @@ public class MainActivity extends AppCompatActivity
 
     private int[] choicesId={R.string.homepage,R.string.all_artciles,R.string.hot_articles,R.string.more_contents};
 
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        toolbar=(Toolbar)findViewById(R.id.toolbar);
         toolbar.setTitle(choicesId[0]);
         setSupportActionBar(toolbar);
 
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_contents,new HomePageFragment()).commit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -71,19 +76,31 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        FragmentManager manager=getSupportFragmentManager();
+
         if (id == R.id.homepage) {
-            // Handle the camera action
+
+            toolbar.setTitle(choicesId[0]);
+            manager.beginTransaction().replace(R.id.main_contents,new HomePageFragment()).commit();
+
         } else if (id == R.id.all_artciles) {
+
+            toolbar.setTitle(choicesId[1]);
+            manager.beginTransaction().replace(R.id.main_contents,new AllArticlesFragment()).commit();
 
         } else if (id == R.id.hot_artciles) {
 
+            toolbar.setTitle(choicesId[2]);
+            manager.beginTransaction().replace(R.id.main_contents,new HotArticleFragment()).commit();
+
         } else if (id == R.id.more_contents) {
+
+            toolbar.setTitle(choicesId[3]);
 
         } else if (id == R.id.nav_share) {
 

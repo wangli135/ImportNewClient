@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:scaleType="fitCenter"
+        android:scaleType="centerInside"
         android:src="@drawable/test"
         android:layout_alignParentTop="true"
         android:layout_marginBottom="36dp"
@@ -15,7 +15,6 @@
 
     <TextView
         android:layout_alignLeft="@+id/article_img"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:gravity="center_vertical"
         android:text="Title"
         android:layout_alignParentBottom="true"

@@ -8,10 +8,4 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ui.MainActivity"
     tools:showIn="@layout/app_bar_main">
-
-    <fragment
-        android:name="importnew.importnewclient.ui.HomePageFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"></fragment>
-
 </FrameLayout>

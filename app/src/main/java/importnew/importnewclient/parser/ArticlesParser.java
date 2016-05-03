@@ -17,7 +17,7 @@ import importnew.importnewclient.pages.Nodes;
  * 解析资讯、Web、架构、基础技术、书籍、教程
  * Created by Xingfeng on 2016/4/29.
  */
-public class ArtcilesParser {
+public class ArticlesParser {
 
     public static List<Article> parserArtciles(String html){
 

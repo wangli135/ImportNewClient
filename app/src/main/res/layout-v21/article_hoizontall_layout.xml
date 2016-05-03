@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--一篇文章的水平布局，左为图片，右为内容-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp">
+
+    <TextView
+        android:maxLines="2"
+        android:padding="5dp"
+        android:text="Title"
+        android:ellipsize="end"
+        android:textSize="14sp"
+        android:textAppearance="@android:style/TextAppearance.Material.Title"
+        android:id="@id/article_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:layout_below="@id/article_title"
+        android:src="@drawable/test"
+        android:id="@id/article_img"
+        android:layout_width="48dp"
+        android:layout_height="48dp" />
+
+    <TextView
+        android:maxLines="3"
+        android:textSize="12sp"
+        android:textAppearance="@android:style/TextAppearance.Material"
+        android:layout_alignBottom="@id/article_img"
+        android:ellipsize="end"
+        android:layout_marginLeft="5dp"
+        android:layout_below="@id/article_title"
+        android:layout_toRightOf="@id/article_img"
+        android:id="@+id/article_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_marginTop="3dp"
+        android:text="1条评论"
+        android:textSize="10sp"
+        android:layout_alignRight="@id/article_desc"
+        android:layout_below="@id/article_desc"
+        android:id="@+id/article_comment_num"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+</RelativeLayout>

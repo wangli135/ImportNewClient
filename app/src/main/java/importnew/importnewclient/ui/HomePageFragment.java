@@ -83,11 +83,12 @@ public class HomePageFragment extends Fragment {
         mRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
         mRefreshLayout.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
 
-        mRefreshLayout.setEnabled(false);
+        mRefreshLayout.setEnabled(true);
         mRefreshLayout.setRefreshing(true);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                mRecyclerView.setVisibility(View.GONE);
                 mRefreshLayout.setRefreshing(true);
                 getHtmlAndParser();
             }

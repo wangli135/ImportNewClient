@@ -1,4 +1,4 @@
-package importnew.importnewclient.interfaces;
+package importnew.importnewclient.net;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import retrofit2.http.GET;
  * 首页
  * Created by Xingfeng on 2016/4/30.
  */
-public interface HomePageService {
+public interface ImportNewService {
 
     @GET
     Call<List<ArticleBlock>> listArticleBlocks();
