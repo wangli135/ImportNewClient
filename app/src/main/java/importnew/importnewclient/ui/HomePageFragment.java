@@ -2,9 +2,8 @@ package importnew.importnewclient.ui;
 
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -15,17 +14,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleBlockAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
+import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 /**
@@ -41,21 +42,21 @@ public class HomePageFragment extends Fragment {
     private List<ArticleBlock> articles;
     private ArticleBlockAdapter mAdapter;
 
-    Handler handler = new Handler() {
+    private ArticleBlockWorker articleBlockWorker;
+
+    private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 
-            if (msg.what == 1) {
 
-                mRefreshLayout.setRefreshing(false);
-                mRecyclerView.setVisibility(View.VISIBLE);
-                mAdapter = new ArticleBlockAdapter(mContext, mRecyclerView,articles);
-                mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-                mRecyclerView.setAdapter(mAdapter);
+            super.onScrollStateChanged(recyclerView, newState);
 
-            }
 
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
         }
     };
 
@@ -88,7 +89,6 @@ public class HomePageFragment extends Fragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mRecyclerView.setVisibility(View.GONE);
                 mRefreshLayout.setRefreshing(true);
                 getHtmlAndParser();
             }
@@ -96,62 +96,88 @@ public class HomePageFragment extends Fragment {
 
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.homepage_recycler);
-        mRecyclerView.setVisibility(View.GONE);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        articles = new ArrayList<>();
+        mAdapter = new ArticleBlockAdapter(getActivity(), mRecyclerView, articles);
+        mRecyclerView.setAdapter(mAdapter);
         getHtmlAndParser();
+
+        mRecyclerView.addOnScrollListener(onScrollListener);
+
     }
+
 
     @Override
     public void onPause() {
         super.onPause();
-        mAdapter.flushCache();
+
+        mRefreshLayout.setRefreshing(false);
+
+        if (mAdapter != null)
+            mAdapter.flushCache();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mAdapter.cancelAllTasks();
+
+        mRefreshLayout.setRefreshing(false);
+
+        if (mAdapter != null)
+            mAdapter.cancelAllTasks();
+
+        if (articleBlockWorker != null) {
+            articleBlockWorker.cancel(true);
+        }
+
+        mRecyclerView.removeOnScrollListener(onScrollListener);
     }
 
     private void getHtmlAndParser() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection conn = null;
-                BufferedReader br = null;
-                try {
+        articleBlockWorker = new ArticleBlockWorker();
+        articleBlockWorker.execute(URLManager.HOMEPAGE);
+    }
 
-                    conn = (HttpURLConnection) new URL("http://www.importnew.com").openConnection();
-                    conn.setReadTimeout(10 * 1000);
-                    conn.setConnectTimeout(5 * 1000);
-                    br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder result=new StringBuilder();
-                    String line="";
-                    while((line=br.readLine())!=null){
-                        result.append(line);
-                    }
 
-                    articles = HomePagerParser.paserHomePage(result.toString());
-                    handler.sendEmptyMessage(1);
+    class ArticleBlockWorker extends AsyncTask<String, Void, List<ArticleBlock>> {
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }finally {
-                    if(conn!=null)
-                        conn.disconnect();
+        @Override
+        protected List<ArticleBlock> doInBackground(String... params) {
+            try {
+                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
+                        .readTimeout(10, TimeUnit.SECONDS).build();
+                Request request = new Request.Builder().url(params[0]).build();
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful()) {
 
-                    try {
-                        if(br!=null)
-                            br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    List<ArticleBlock> articleBlockList = HomePagerParser.paserHomePage(response.body().string());
+                    return articleBlockList;
+
+                } else {
+                    return null;
                 }
 
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
             }
-        }).start();
+        }
 
+        @Override
+        protected void onPostExecute(List<ArticleBlock> articleBlocks) {
+            super.onPostExecute(articleBlocks);
 
+            mRefreshLayout.setRefreshing(false);
+
+            if (articleBlocks != null) {
+
+                articles.clear();
+                articles.addAll(articleBlocks);
+                mAdapter.notifyDataSetChanged();
+            }
+
+        }
     }
 
 

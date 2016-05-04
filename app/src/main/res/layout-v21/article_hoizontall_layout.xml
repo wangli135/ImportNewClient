@@ -2,18 +2,22 @@
 <!--一篇文章的水平布局，左为图片，右为内容-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:background="@drawable/article_block_bg"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
     android:layout_height="100dp">
 
     <TextView
+        android:gravity="center_vertical"
         android:maxLines="2"
         android:padding="5dp"
         android:text="Title"
         android:ellipsize="end"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:textAppearance="@android:style/TextAppearance.Material.Title"
         android:id="@id/article_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="30dp" />
 
     <ImageView
         android:layout_below="@id/article_title"
@@ -36,6 +40,7 @@
         android:layout_height="wrap_content" />
 
     <TextView
+        android:gravity="center_vertical"
         android:layout_marginTop="3dp"
         android:text="1条评论"
         android:textSize="10sp"
@@ -43,7 +48,7 @@
         android:layout_below="@id/article_desc"
         android:id="@+id/article_comment_num"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="16dp" />
 
 
 </RelativeLayout>

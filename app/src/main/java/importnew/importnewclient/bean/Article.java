@@ -2,13 +2,14 @@ package importnew.importnewclient.bean;
 
 import android.graphics.Bitmap;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 文章实体类
  * Created by Xingfeng on 2016/4/30.
  */
-public class Article {
+public class Article implements Serializable{
 
     /**
      * 文章URL

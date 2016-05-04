@@ -85,6 +85,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
 
             verticalArticleView = holder.views[i];
             article = articles.get(i);
+            verticalArticleView.setArticle(article);
             verticalArticleView.setText(article.getTitle());
             verticalArticleView.setTag(article.getImgUrl());
             verticalArticleView.setImageResource(R.drawable.emptyview);
@@ -113,7 +114,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
         VerticalArticleView[] views;
 
 
-        public ArticleBlockVH(View itemView) {
+        public ArticleBlockVH(final View itemView) {
             super(itemView);
             category = (TextView) itemView.findViewById(R.id.articles_category);
             views = new VerticalArticleView[5];
@@ -123,7 +124,14 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             views[3] = (VerticalArticleView) itemView.findViewById(R.id.fourth_article);
             views[4] = (VerticalArticleView) itemView.findViewById(R.id.fifth_article);
 
+            for (int i = 0; i < views.length; i++) {
+
+                views[i].setStartActivity(true);
+
+            }
         }
+
+
     }
 
     public void loadBitmaps(VerticalArticleView articleView, String imageUrl) {

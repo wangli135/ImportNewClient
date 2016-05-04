@@ -1,6 +1,7 @@
 package importnew.importnewclient.ui;
 
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,11 +11,13 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleAdapter;
@@ -27,7 +30,7 @@ import okhttp3.Response;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ArticleListFragment extends Fragment {
+public class ArticleListFragment extends Fragment implements ListView.OnItemClickListener {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
@@ -38,7 +41,7 @@ public class ArticleListFragment extends Fragment {
     /**
      * 文章分类URL
      */
-    private  String url;
+    private String url;
 
     /**
      * 文章页数
@@ -53,14 +56,14 @@ public class ArticleListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState!=null){
-            url= (String) savedInstanceState.get(ARTICLE_BASE_URL);
+        if (savedInstanceState != null) {
+            url = (String) savedInstanceState.get(ARTICLE_BASE_URL);
         }
     }
 
     public static ArticleListFragment newInstance(String baseurl) {
         ArticleListFragment fragment = new ArticleListFragment();
-        Bundle bundle =new Bundle();
+        Bundle bundle = new Bundle();
         bundle.putString(ARTICLE_BASE_URL, baseurl);
         fragment.setArguments(bundle);
         return fragment;
@@ -86,7 +89,6 @@ public class ArticleListFragment extends Fragment {
             @Override
             public void onRefresh() {
                 mSwipeRefreshLayout.setRefreshing(true);
-                mListView.setVisibility(View.GONE);
                 loadArticles();
 
             }
@@ -96,7 +98,7 @@ public class ArticleListFragment extends Fragment {
         mArticles = new ArrayList<>();
         mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
         mListView.setAdapter(mAdapter);
-
+        mListView.setOnItemClickListener(this);
 
         loadArticles();
     }
@@ -105,35 +107,50 @@ public class ArticleListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        if (mSwipeRefreshLayout != null)
+            mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.flushCache();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mSwipeRefreshLayout != null)
+            mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.cancelAllTasks();
     }
 
-    private void loadArticles(){
-        String url=(String)getArguments().get(ARTICLE_BASE_URL)+pageNum;
+    private void loadArticles() {
+        String url = (String) getArguments().get(ARTICLE_BASE_URL) + pageNum;
         new ArticleGetTask().execute(url);
     }
 
-    class ArticleGetTask extends AsyncTask<String,Void,List<Article>> {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        Article article = mArticles.get(position);
+        Intent intent = new Intent(getParentFragment().getActivity(), ArticleContentActivity.class);
+        intent.putExtra(ArticleContentActivity.ARTICLE_KEY, article);
+        getParentFragment().getActivity().startActivity(intent);
+
+    }
+
+    class ArticleGetTask extends AsyncTask<String, Void, List<Article>> {
 
         @Override
         protected List<Article> doInBackground(String... params) {
 
             try {
-                OkHttpClient client=new OkHttpClient();
-                Request request=new Request.Builder().url(params[0]).build();
-                Response response=client.newCall(request).execute();
-                if(response.isSuccessful()){
+                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
+                        .readTimeout(10, TimeUnit.SECONDS).build();
+                Request request = new Request.Builder().url(params[0]).build();
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful()) {
 
-                    List<Article> articles= ArticlesParser.parserArtciles(response.body().string());
+                    List<Article> articles = ArticlesParser.parserArtciles(response.body().string());
                     return articles;
 
-                }else{
+                } else {
                     return null;
                 }
 
@@ -147,12 +164,11 @@ public class ArticleListFragment extends Fragment {
         protected void onPostExecute(List<Article> articles) {
             super.onPostExecute(articles);
 
-            if(articles==null){
+            if (articles == null) {
                 mSwipeRefreshLayout.setRefreshing(false);
-            }else{
+            } else {
                 mArticles.addAll(articles);
                 mSwipeRefreshLayout.setRefreshing(false);
-                mListView.setVisibility(View.VISIBLE);
                 mAdapter.notifyDataSetChanged();
             }
         }

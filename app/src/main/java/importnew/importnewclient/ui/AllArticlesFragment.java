@@ -3,14 +3,13 @@ package importnew.importnewclient.ui;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.ogaclejapan.smarttablayout.SmartTabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +23,13 @@ import importnew.importnewclient.net.URLManager;
  */
 public class AllArticlesFragment extends Fragment {
 
-    private SmartTabLayout mTabLayout;
+    private TabLayout mTabLayout;
     private ViewPager mViewPager;
 
     private List<ArticleListFragment> fragments;
+    private String[] pageTitles;
 
-   private FragmentStatePagerAdapter mAdapter;
+   private FragmentPagerAdapter mAdapter;
     public AllArticlesFragment() {
     }
 
@@ -43,18 +43,19 @@ public class AllArticlesFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mTabLayout=(SmartTabLayout)view.findViewById(R.id.viewpagertab);
-
-
+        mTabLayout=(TabLayout) view.findViewById(R.id.tabLayout);
         mViewPager=(ViewPager)view.findViewById(R.id.viewpager);
         initDatas();
         mViewPager.setAdapter(mAdapter);
+        mTabLayout.setupWithViewPager(mViewPager);
 
-        mTabLayout.setViewPager(mViewPager);
 
     }
 
     private void initDatas(){
+
+        pageTitles=getResources().getStringArray(R.array.pageTitle);
+
         fragments=new ArrayList<>();
         fragments.add(ArticleListFragment.newInstance(URLManager.NEWS));
         fragments.add(ArticleListFragment.newInstance(URLManager.WEB));
@@ -62,7 +63,7 @@ public class AllArticlesFragment extends Fragment {
         fragments.add(ArticleListFragment.newInstance(URLManager.BASIC));
         fragments.add(ArticleListFragment.newInstance(URLManager.BOOKS));
         fragments.add(ArticleListFragment.newInstance(URLManager.TUTORIAL));
-        mAdapter=new FragmentStatePagerAdapter(getChildFragmentManager()) {
+        mAdapter=new FragmentPagerAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
                 return fragments.get(position);
@@ -71,6 +72,11 @@ public class AllArticlesFragment extends Fragment {
             @Override
             public int getCount() {
                 return fragments.size();
+            }
+
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return pageTitles[position];
             }
         };
 

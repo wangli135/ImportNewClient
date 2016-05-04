@@ -1,6 +1,7 @@
 package importnew.importnewclient.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -11,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import importnew.importnewclient.R;
+import importnew.importnewclient.bean.Article;
+import importnew.importnewclient.ui.ArticleContentActivity;
 
 
 /**
@@ -23,6 +26,7 @@ public class VerticalArticleView extends FrameLayout{
 
     private ImageView mArticleImg;
     private TextView mArticleTitle;
+    private Article mArticle;//关联的文章
 
     public VerticalArticleView(Context context) {
         this(context,null);
@@ -60,4 +64,34 @@ public class VerticalArticleView extends FrameLayout{
         return mArticleTitle.getText();
     }
 
+    public ImageView getImageView(){
+        return mArticleImg;
+    }
+
+    public Article getArticle() {
+        return mArticle;
+    }
+
+    public void setArticle(Article mArticle) {
+        this.mArticle = mArticle;
+    }
+
+    /**
+     * 设置点击跳转事件
+     * @param startable
+     */
+    public void setStartActivity(boolean startable){
+        if(startable){
+            setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mArticle!=null){
+                        Intent intent=new Intent(v.getContext(), ArticleContentActivity.class);
+                        intent.putExtra(ArticleContentActivity.ARTICLE_KEY,mArticle);
+                        v.getContext().startActivity(intent);
+                    }
+                }
+            });
+        }
+    }
 }

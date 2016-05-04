@@ -1,9 +1,12 @@
 <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/homepage_swiperefresh"
+    android:background="#F0F0F0"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.v7.widget.RecyclerView
+        android:background="#E0E0E0"
+        android:dividerHeight="3dp"
         android:id="@+id/homepage_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>

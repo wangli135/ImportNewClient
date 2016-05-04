@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--一篇文章的垂直布局，上部为图片，下部为文章标题-->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    android:background="@drawable/article_block_bg"
+    android:padding="5dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ImageView
-        android:scaleType="centerInside"
         android:src="@drawable/test"
         android:layout_alignParentTop="true"
         android:layout_marginBottom="36dp"
@@ -14,6 +16,8 @@
         android:layout_height="match_parent" />
 
     <TextView
+        android:maxLines="2"
+        android:ellipsize="end"
         android:layout_alignLeft="@+id/article_img"
         android:gravity="center_vertical"
         android:text="Title"
