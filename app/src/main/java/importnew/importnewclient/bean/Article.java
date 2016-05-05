@@ -34,7 +34,7 @@ public class Article implements Serializable{
     /**
      * 文章内容
      */
-    private String body;
+    private ArticleBody body;
 
     /**
      * 图片
@@ -55,7 +55,7 @@ public class Article implements Serializable{
     public Article() {
     }
 
-    public Article(String url, String imgUrl, String title, String desc, String body, Bitmap bitmap, int commentNum, Date date) {
+    public Article(String url, String imgUrl, String title, String desc, ArticleBody body, Bitmap bitmap, int commentNum, Date date) {
         this.url = url;
         this.imgUrl = imgUrl;
         this.title = title;
@@ -98,11 +98,11 @@ public class Article implements Serializable{
         this.desc = desc;
     }
 
-    public String getBody() {
+    public ArticleBody getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public void setBody(ArticleBody body) {
         this.body = body;
     }
 

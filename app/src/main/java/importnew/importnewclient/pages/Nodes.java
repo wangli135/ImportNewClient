@@ -34,7 +34,7 @@ public class Nodes {
          */
         public static final String NEWS_TECH="aw_categories_widget-2";
 
-
+       public static final String ARTICLE_CONTENT="article_content";
 
     }
 
@@ -94,9 +94,30 @@ public class Nodes {
         public static final String NAVIGATION="navigation margin-20";
 
 
+        /**
+         * 文章标题
+         */
+        public static final String ENTRY_HEADER="entry-header";
+
+        /**
+         * 文章正文部分
+         */
+        public static final String ENTRY="entry";
+
+        /**
+         * 拷贝权
+         */
+        public static final String COPYRIGHT="copyright-area";
     }
 
+    /**
+     * HTML标签
+     */
     public static class Tag{
+
+        public static final String H1="h1";
+
+        public static final String H2="h2";
 
         public static final String H3="h3";
 
