@@ -8,7 +8,6 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:src="@drawable/test"
         android:layout_alignParentTop="true"
         android:layout_marginBottom="36dp"
         android:id="@+id/article_img"

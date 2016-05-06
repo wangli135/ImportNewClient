@@ -21,7 +21,6 @@
     <ImageView
         android:layout_marginTop="3dp"
         android:layout_below="@id/article_title"
-        android:src="@drawable/test"
         android:id="@+id/article_img"
         android:layout_width="48dp"
         android:layout_height="48dp" />

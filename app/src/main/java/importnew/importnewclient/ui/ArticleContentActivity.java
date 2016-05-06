@@ -60,6 +60,20 @@ public class ArticleContentActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mAdapter!=null)
+            mAdapter.flushCache();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mAdapter!=null)
+            mAdapter.cancelAllTasks();
+    }
+
     class LoadAndParserWorker extends AsyncTask<String,Void,ArticleBody>{
 
         @Override

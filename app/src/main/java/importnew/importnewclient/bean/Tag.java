@@ -5,6 +5,6 @@ package importnew.importnewclient.bean;
  */
 public enum Tag {
 
-    H1,H2,H3,TEXT,P,BR,IMG;
+    H1,H2,H3,TEXT,P,BR,IMG,STRONG,A;
 
 }

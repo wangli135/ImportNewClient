@@ -2,6 +2,7 @@ package importnew.importnewclient.bean;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 文章正文部分
@@ -13,13 +14,27 @@ public class ArticleBody{
 
         private Tag tag;
         private String text;
+        //针对img和a标签
+        private String url;
+
+        private List<Node> childNodes;
 
         public Node() {
+            childNodes=new ArrayList<>();
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
         }
 
         public Node(Tag tag, String text) {
             this.tag = tag;
             this.text = text;
+            childNodes=new ArrayList<>();
         }
 
         public Tag getTag() {
@@ -36,6 +51,18 @@ public class ArticleBody{
 
         public void setText(String text) {
             this.text = text;
+        }
+
+        public void add(Node child){
+            childNodes.add(child);
+        }
+
+        public Node get(int index){
+            return childNodes.get(index);
+        }
+
+        public List<Node> childNodes(){
+            return childNodes;
         }
     }
 

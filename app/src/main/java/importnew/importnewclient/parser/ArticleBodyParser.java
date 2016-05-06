@@ -1,10 +1,11 @@
 package importnew.importnewclient.parser;
 
-import android.util.Log;
+import android.text.TextUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 
 import importnew.importnewclient.bean.ArticleBody;
 import importnew.importnewclient.bean.Tag;
@@ -23,53 +24,77 @@ public class ArticleBodyParser {
         Element grid_8 = Jsoup.parse(html).body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first();
 
         //解析文章主体部分
-        Element firstDiv = grid_8.getElementsByTag(Nodes.Tag.DIV).first();
+        for (Element element : grid_8.children()) {
 
-        Elements divs = firstDiv.getElementsByTag(Nodes.Tag.DIV);
-        for (Element element : divs) {
+            //文章主体部分
+            if (element.tagName().equals(Nodes.Tag.DIV) && (element.id().startsWith("post"))) {
 
-            //标题
-            if (element.className().equals(Nodes.Class.ENTRY_HEADER)) {
-                addTitle(articleBody, element);
+                for (Element element1 : element.children()) {
+
+                    //标题
+                    if (element1.className().equals(Nodes.Class.ENTRY_HEADER)) {
+                        addTitle(articleBody, element1);
+                    }
+                    //文章正文
+                    else if (element1.className().equals(Nodes.Class.ENTRY)) {
+                        parserArticleContent(element1, articleBody);
+                    }
+
+                }
+
+
             }
-            //文章正文
-            else if (element.className().equals(Nodes.Class.ENTRY)) {
-
-                Elements elements = element.getAllElements();
-                ArticleBody.Node node = null;
-
-                parserArticleContent(elements, element, articleBody);
+            //评论部分
+            else if (element.tagName().equals(Nodes.Tag.DIV) && element.id().equals(Nodes.Id.RESPOND)) {
 
             }
+
         }
-
-
-        Log.d("wangli", articleBody.toString());
 
         return articleBody;
 
     }
 
-    private static void parserArticleContent(Elements elements, Element parent, ArticleBody articleBody) {
+    /**
+     * 解析文章主体部分
+     *
+     * @param parent      父节点
+     * @param articleBody 文章主体部分
+     */
+    private static void parserArticleContent(Element parent, ArticleBody articleBody) {
 
-        ArticleBody.Node node=null;
-        for (Element ele : elements) {
+        ArticleBody.Node node = null;
 
-            if (ele.parent().equals(parent)) {
+        for (Node childNode : parent.childNodes()) {
 
+            if(childNode instanceof Element){
+
+                Element ele=(Element)childNode;
                 if (ele.className().equals(Nodes.Class.COPYRIGHT)) {
                     node = new ArticleBody.Node(Tag.TEXT, ele.text());
                     articleBody.add(node);
                 } else if (ele.id().equals(Nodes.Id.ARTICLE_CONTENT)) {
 
-                    Element element=ele.getElementsByTag(Nodes.Tag.DIV).first().getElementsByTag(Nodes.Tag.DIV).first();
-                    parserArticleContent(element.getAllElements(),element,articleBody);
+                    for (Element element1 : ele.children()) {
+
+                        if (element1.tagName().equals(Nodes.Tag.DIV)) {
+
+                            parserArticleContent(element1, articleBody);
+
+                            break;
+                        }
+
+                    }
                     break;
 
-                } else if (ele.tagName().equals(Nodes.Tag.P) && ele.hasText()) {
-                    node = new ArticleBody.Node(Tag.P, ele.text());
-                    articleBody.add(node);
-                } else if (ele.tagName().equals(Nodes.Tag.H2)) {
+                } else if (ele.tagName().equals(Nodes.Tag.P)&&ele.childNodeSize()>1) {
+
+                    parserArticleTagOfP(ele,articleBody);
+
+                }  else if(ele.tagName().equals(Nodes.Tag.P)){
+                    parserArticleContent(ele,articleBody);
+                }
+                else if (ele.tagName().equals(Nodes.Tag.H2)) {
                     node = new ArticleBody.Node(Tag.H2, ele.text());
                     articleBody.add(node);
                 } else if (ele.tagName().equals(Nodes.Tag.H3)) {
@@ -77,6 +102,30 @@ public class ArticleBodyParser {
                     articleBody.add(node);
                 } else if (ele.tagName().equals(Nodes.Tag.H1)) {
                     node = new ArticleBody.Node(Tag.H1, ele.text());
+                    articleBody.add(node);
+                } else if (ele.tagName().equals(Nodes.Tag.BR)) {
+                    node = new ArticleBody.Node(Tag.BR, "");
+                    articleBody.add(node);
+                } else if (ele.tagName().equals(Nodes.Tag.STRONG)) {
+                    node = new ArticleBody.Node(Tag.STRONG, ele.text());
+                    articleBody.add(node);
+                } else if (ele.tagName().equals(Nodes.Tag.A)&&ele.hasText()) {
+                    node = new ArticleBody.Node(Tag.A, ele.text());
+                    node.setUrl(ele.attr(Nodes.Attribute.HREF));
+                    articleBody.add(node);
+                }else if(ele.tagName().equals(Nodes.Tag.A)){
+                    parserArticleContent(ele,articleBody);
+                }else if(ele.tagName().equals(Nodes.Tag.IMG)){
+                    node=new ArticleBody.Node(Tag.IMG,ele.text());
+                    node.setUrl(ele.attr(Nodes.Attribute.SRC));
+                    articleBody.add(node);
+                }
+
+            }else if(childNode instanceof TextNode){
+
+                TextNode textNode=(TextNode)childNode;
+                if(!TextUtils.isEmpty(textNode.text().trim())) {
+                    node=new ArticleBody.Node(Tag.TEXT,textNode.text());
                     articleBody.add(node);
                 }
 
@@ -103,4 +152,56 @@ public class ArticleBodyParser {
 
     }
 
+    /**
+     * 解析标签P
+     * @param tagOfP
+     * @param articleBody
+     */
+    private static void parserArticleTagOfP(Element tagOfP,ArticleBody articleBody){
+
+        ArticleBody.Node nodeP=new ArticleBody.Node(Tag.P,tagOfP.text());
+        ArticleBody.Node childNode=null;
+        for(Node node:tagOfP.childNodes()){
+
+            if(node instanceof TextNode){
+
+                TextNode textNode=(TextNode)node;
+                if(!(TextUtils.isEmpty(textNode.text().trim()))){
+                    childNode=new ArticleBody.Node(Tag.TEXT,textNode.text());
+                    nodeP.add(childNode);
+                }
+
+            }else if(node instanceof Element){
+
+                Element element=(Element)node;
+
+                if(element.tagName().equals(Nodes.Tag.STRONG)){
+                    childNode=new ArticleBody.Node(Tag.STRONG,element.text());
+                    nodeP.add(childNode);
+                }else if(element.tagName().equals(Nodes.Tag.A)){
+                    childNode=new ArticleBody.Node(Tag.A,element.text());
+                    childNode.setUrl(element.attr(Nodes.Attribute.HREF));
+                    nodeP.add(childNode);
+                }else if(element.tagName().equals(Nodes.Tag.IMG)){
+                    childNode=new ArticleBody.Node(Tag.IMG,element.text());
+                    childNode.setUrl(element.attr(Nodes.Attribute.SRC));
+                    nodeP.add(childNode);
+                }else if(element.tagName().equals(Nodes.Tag.BR)){
+                    childNode=new ArticleBody.Node(Tag.BR,"");
+                    nodeP.add(childNode);
+                }else{
+                    childNode=new ArticleBody.Node(Tag.TEXT,element.text());
+                    nodeP.add(childNode);
+                }
+
+
+
+            }
+
+
+        }
+
+        articleBody.add(nodeP);
+
+    }
 }

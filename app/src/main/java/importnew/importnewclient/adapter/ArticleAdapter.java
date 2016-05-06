@@ -86,7 +86,7 @@ public class ArticleAdapter extends BaseAdapter {
         viewHolder.desc.setText(article.getDesc());
         viewHolder.commentNum.setText(article.getCommentNum()+"条评论");
 
-        viewHolder.img.setImageResource(R.drawable.emptyview);
+        viewHolder.img.setImageResource(R.drawable.img_empty);
         loadBitmaps(article.getImgUrl(),viewHolder.img);
         return convertView;
     }

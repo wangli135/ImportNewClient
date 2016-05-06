@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(choicesId[0]);
         setSupportActionBar(toolbar);
 
 
@@ -55,7 +54,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initFragments() {
-        mFragment = new HotArticleFragment();
+        mFragment = new HomePageFragment();
+        toolbar.setTitle(choicesId[0]);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_contents, mFragment).commit();
     }
 

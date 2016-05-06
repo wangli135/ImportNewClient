@@ -36,6 +36,10 @@ public class Nodes {
 
        public static final String ARTICLE_CONTENT="article_content";
 
+        /**
+         * 评论
+         */
+        public static final String RESPOND="respond";
     }
 
     public static class Class{
@@ -130,6 +134,10 @@ public class Nodes {
         public static final String SPAN="span";
 
         public static final String DIV="div";
+
+        public static final String BR="br";
+
+        public static final String STRONG="strong";
 
     }
 
