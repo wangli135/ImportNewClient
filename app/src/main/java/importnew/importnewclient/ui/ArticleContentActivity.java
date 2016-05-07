@@ -7,17 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.widget.ListView;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleBodyAdapter;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.bean.ArticleBody;
 import importnew.importnewclient.parser.ArticleBodyParser;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import importnew.importnewclient.utils.SecondCache;
 
 /**
  * 显示文章详情的页面
@@ -32,12 +27,16 @@ public class ArticleContentActivity extends AppCompatActivity {
     private ListView mListView;
     private ArticleBodyAdapter mAdapter;
 
+    private SecondCache mSecondCache;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_content);
         mArticle= (Article) getIntent().getSerializableExtra(ARTICLE_KEY);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mSecondCache=SecondCache.getInstance(this);
 
         initViews();
 
@@ -65,6 +64,10 @@ public class ArticleContentActivity extends AppCompatActivity {
         super.onPause();
         if(mAdapter!=null)
             mAdapter.flushCache();
+
+        if(mSecondCache!=null)
+            mSecondCache.flushCache();
+
     }
 
     @Override
@@ -85,25 +88,16 @@ public class ArticleContentActivity extends AppCompatActivity {
         @Override
         protected ArticleBody doInBackground(String... params) {
 
-            try {
-                String articleURL=params[0];
-                OkHttpClient.Builder builder=new OkHttpClient.Builder();
-                builder.connectTimeout(5, TimeUnit.SECONDS).readTimeout(10,TimeUnit.SECONDS)
-                        .retryOnConnectionFailure(false);
-                OkHttpClient client=builder.build();
-                Request request=new Request.Builder().url(articleURL).build();
-                Response response=client.newCall(request).execute();
-                if(response.isSuccessful()){
+            String html=mSecondCache.getResponseFromDiskCache(params[0]);
+            if(html==null)
+                html=mSecondCache.getResponseFromNetwork(params[0]);
 
-                    ArticleBody articleBody= ArticleBodyParser.parser(response.body().string());
-                    return articleBody;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(html!=null){
+                return ArticleBodyParser.parser(html);
             }
 
-
             return null;
+
         }
 
         @Override

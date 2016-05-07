@@ -14,18 +14,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleAdapter;
 import importnew.importnewclient.bean.Article;
+import importnew.importnewclient.net.HttpManager;
+import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.parser.ArticlesParser;
+import importnew.importnewclient.utils.SecondCache;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,13 +34,16 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
 
-    private List<Article> mArticles;
+    private LinkedList<Article> mArticles;
     private ArticleAdapter mAdapter;
+
+    private SecondCache mSecondCache;
+    private OkHttpClient httpClient;
 
     /**
      * 文章分类URL
      */
-    private String url;
+    private String category;
 
     /**
      * 文章页数
@@ -57,7 +59,7 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            url = (String) savedInstanceState.get(ARTICLE_BASE_URL);
+            category = (String) savedInstanceState.get(ARTICLE_BASE_URL);
         }
     }
 
@@ -89,20 +91,47 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
             @Override
             public void onRefresh() {
                 mSwipeRefreshLayout.setRefreshing(true);
-                loadArticles();
+                refreshArticles();
 
             }
         });
 
         mListView = (ListView) view.findViewById(R.id.articles_lv);
-        mArticles = new ArrayList<>();
+        mArticles =new LinkedList<>();
         mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
 
+        mSecondCache=SecondCache.getInstance(getContext());
+
         loadArticles();
     }
 
+
+    private void refreshArticles(){
+        if(httpClient==null)
+            httpClient= HttpManager.getInstance(getContext()).getClient();
+        new RefreshWorker(new RefreshWorker.OnRefreshListener() {
+            @Override
+            public void onRefresh(String html) {
+
+                if(html==null){
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }else{
+                    List<Article> list=ArticlesParser.parserArtciles(html);
+                    for(Article article:list){
+                        if(!mArticles.contains(article)){
+                            mArticles.addFirst(article);
+                        }else
+                            break;
+                    }
+                    mAdapter.notifyDataSetChanged();
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+
+            }
+        },httpClient,category+"1");
+    }
 
     @Override
     public void onPause() {
@@ -110,6 +139,10 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.flushCache();
+
+        if(mSecondCache!=null)
+            mSecondCache.flushCache();
+
     }
 
     @Override
@@ -121,7 +154,8 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
     }
 
     private void loadArticles() {
-        String url = (String) getArguments().get(ARTICLE_BASE_URL) + pageNum;
+        category=(String)getArguments().get(ARTICLE_BASE_URL);
+        String url =category+ pageNum;
         new ArticleGetTask().execute(url);
     }
 
@@ -140,23 +174,15 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
         @Override
         protected List<Article> doInBackground(String... params) {
 
-            try {
-                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
-                        .readTimeout(10, TimeUnit.SECONDS).build();
-                Request request = new Request.Builder().url(params[0]).build();
-                Response response = client.newCall(request).execute();
-                if (response.isSuccessful()) {
+            String url=params[0];
+            String html=mSecondCache.getResponseFromDiskCache(url);
+            if(html==null)
+                html=mSecondCache.getResponseFromNetwork(url);
 
-                    List<Article> articles = ArticlesParser.parserArtciles(response.body().string());
-                    return articles;
-
-                } else {
-                    return null;
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(html!=null){
+                return ArticlesParser.parserArtciles(html);
             }
+
             return null;
         }
 
@@ -168,8 +194,8 @@ public class ArticleListFragment extends Fragment implements ListView.OnItemClic
                 mSwipeRefreshLayout.setRefreshing(false);
             } else {
                 mArticles.addAll(articles);
-                mSwipeRefreshLayout.setRefreshing(false);
                 mAdapter.notifyDataSetChanged();
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         }
     }

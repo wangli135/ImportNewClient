@@ -7,7 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import importnew.importnewclient.bean.Article;
@@ -21,7 +21,7 @@ public class ArticlesParser {
 
     public static List<Article> parserArtciles(String html){
 
-        List<Article> lists=new ArrayList<>();
+        List<Article> lists=new LinkedList<>();
         Article article=null;
 
         Element grid_8 = Jsoup.parse(html).body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first();

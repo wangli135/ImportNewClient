@@ -2,7 +2,6 @@ package importnew.importnewclient.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,15 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.jakewharton.disklrucache.DiskLruCache;
-
-import java.io.BufferedInputStream;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,8 +16,7 @@ import java.util.Set;
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.bean.ArticleBlock;
-import importnew.importnewclient.utils.MyDiskLruCache;
-import importnew.importnewclient.utils.MyLruCache;
+import importnew.importnewclient.utils.ThridCache;
 import importnew.importnewclient.view.VerticalArticleView;
 
 /**
@@ -41,15 +30,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
     private Set<BitmapWorkerTask> taskCollection;
 
 
-    /**
-     * 图片缓存技术的核心类，用于缓存所有下载好的图片，在程序内存达到设定值时会将最少最近使用的图片移除掉
-     */
-    private MyLruCache mMemoryCache;
-
-    /**
-     * 图片硬盘缓存核心类
-     */
-    private MyDiskLruCache mDiskLruCache;
+    private ThridCache mThridCache;
 
     /**
      * RecycleView实例
@@ -63,8 +44,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
         this.mRecycleView = recyclerView;
         taskCollection = new HashSet<>();
 
-        mMemoryCache = MyLruCache.newInstance();
-        mDiskLruCache = new MyDiskLruCache(context, "thumb");
+        mThridCache=ThridCache.getInstance(context);
     }
 
     @Override
@@ -103,8 +83,8 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
      * 将缓存记录同步到journal文件中
      */
     public void flushCache() {
-        if (mDiskLruCache != null) {
-            mDiskLruCache.flushCache();
+        if (mThridCache != null) {
+            mThridCache.flushCache();
         }
     }
 
@@ -138,7 +118,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
 
         try {
 
-            Bitmap bitmap = mMemoryCache.getBitmapFromCache(imageUrl);
+            Bitmap bitmap = mThridCache.getBitmapFromMemory(imageUrl);
             if (bitmap == null) {
                 BitmapWorkerTask task = new BitmapWorkerTask();
                 taskCollection.add(task);
@@ -174,40 +154,12 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
         @Override
         protected Bitmap doInBackground(String... params) {
             imageUrl = params[0];
-            FileDescriptor fileDescriptor = null;
-            FileInputStream fileInputStream = null;
-            DiskLruCache.Snapshot snapshot = null;
 
-            try {
-                //查找key对应的缓存
-                snapshot = mDiskLruCache.getCache(imageUrl);
-                if (snapshot == null) {
-                    //如果没有找到对应的缓存，则准备从网络上请求数据
-                    downloadUrlToStream(imageUrl);
-                    snapshot = mDiskLruCache.getCache(imageUrl);
-                }
-
-                if (snapshot != null) {
-                    fileInputStream = (FileInputStream) snapshot.getInputStream(0);
-                    fileDescriptor = fileInputStream.getFD();
-                }
-
-                //将缓存数据解析成Bitmap
-                Bitmap bitmap = null;
-                if (fileDescriptor != null) {
-                    bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-                }
-
-                if (bitmap != null) {
-                    mMemoryCache.addBitmapToCache(params[0], bitmap);
-                }
-                return bitmap;
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            Bitmap bitmap=mThridCache.getBitmapFromDiskCache(imageUrl);
+            if(bitmap==null){
+                bitmap=mThridCache.getBitmapFromNetwork(imageUrl);
             }
-
-            return null;
+            return bitmap;
         }
 
         @Override
@@ -220,40 +172,6 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             }
             taskCollection.remove(this);
 
-        }
-
-        private boolean downloadUrlToStream(String urlString) {
-
-            HttpURLConnection urlConnection = null;
-            BufferedInputStream in = null;
-            try {
-                final URL url = new URL(urlString);
-                urlConnection = (HttpURLConnection) url.openConnection();
-                in = new BufferedInputStream(urlConnection.getInputStream());
-                mDiskLruCache.putCache(urlString, in);
-                return true;
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-
-                try {
-
-                    if (in != null) {
-                        in.close();
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            return false;
         }
 
 

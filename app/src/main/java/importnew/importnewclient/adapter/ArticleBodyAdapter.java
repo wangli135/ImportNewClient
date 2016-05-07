@@ -17,24 +17,13 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.jakewharton.disklrucache.DiskLruCache;
-
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.ArticleBody;
 import importnew.importnewclient.bean.Tag;
-import importnew.importnewclient.utils.BitmapUtil;
-import importnew.importnewclient.utils.MyDiskLruCache;
-import importnew.importnewclient.utils.MyLruCache;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import importnew.importnewclient.utils.ThridCache;
 
 /**
  * Created by Xingfeng on 2016/5/5.
@@ -44,8 +33,7 @@ public class ArticleBodyAdapter extends BaseAdapter {
     private ArticleBody articleBody;
     private LayoutInflater mInflater;
 
-    private MyLruCache myLruCache;
-    private MyDiskLruCache myDiskLruCache;
+   private ThridCache mThridCache;
 
     private Set<BitmapWorkerTask> tasks;
 
@@ -53,8 +41,7 @@ public class ArticleBodyAdapter extends BaseAdapter {
     public ArticleBodyAdapter(Context context, ArticleBody articleBody) {
         this.articleBody = articleBody;
         mInflater = LayoutInflater.from(context);
-        myLruCache = MyLruCache.newInstance();
-        myDiskLruCache = new MyDiskLruCache(context, "thumb");
+       mThridCache=ThridCache.getInstance(context);
         tasks = new HashSet<>();
     }
 
@@ -172,15 +159,15 @@ public class ArticleBodyAdapter extends BaseAdapter {
     }
 
     public void flushCache() {
-        if (myDiskLruCache != null) {
-            myDiskLruCache.flushCache();
+        if (mThridCache != null) {
+            mThridCache.flushCache();
         }
     }
 
     private void loadImgs(ImageView imageView, String imageUrl) {
 
         //Step 1：从内存中检索
-        Bitmap bitmap = myLruCache.getBitmapFromCache(imageUrl);
+        Bitmap bitmap = mThridCache.getBitmapFromMemory(imageUrl);
         if (bitmap != null && imageView != null) {
             imageView.setImageBitmap(bitmap);
         } else {
@@ -221,44 +208,11 @@ public class ArticleBodyAdapter extends BaseAdapter {
 
             imageUrl = params[0];
 
-            FileDescriptor fileDescriptor = null;
-            FileInputStream fileInputStream = null;
-
-            DiskLruCache.Snapshot snapshot = null;
-
-            try {
-
-                //硬盘缓存中获取
-                snapshot = myDiskLruCache.getCache(imageUrl);
-                if (snapshot == null) {
-                    //网络下载
-                    if (downloadBitmap(imageUrl)) {
-                        snapshot = myDiskLruCache.getCache(imageUrl);
-                    }
-                }
-
-                if (snapshot != null) {
-                    fileInputStream = (FileInputStream) snapshot.getInputStream(0);
-                    fileDescriptor = fileInputStream.getFD();
-                }
-
-                //将缓存数据解析成Bitmap
-                Bitmap bitmap = null;
-                if (fileDescriptor != null) {
-                    bitmap = BitmapUtil.decodeSampledBitmapFromFileDescriptor(fileDescriptor, imageView.getWidth(), imageView.getHeight());
-                }
-
-                if (bitmap != null) {
-                    myLruCache.addBitmapToCache(imageUrl, bitmap);
-                }
-
-                return bitmap;
-
-            } catch (Exception e) {
-
+            Bitmap bitmap=mThridCache.getBitmapFromDiskCache(imageUrl);
+            if(bitmap==null){
+                bitmap=mThridCache.getBitmapFromNetwork(imageUrl);
             }
-
-            return null;
+            return bitmap;
         }
 
         @Override
@@ -270,25 +224,5 @@ public class ArticleBodyAdapter extends BaseAdapter {
             tasks.remove(this);
         }
 
-        /**
-         * 网络下载，并将下载内容写进硬盘
-         *
-         * @param imageUrl
-         */
-        private boolean downloadBitmap(String imageUrl) {
-
-            try {
-                OkHttpClient client = new OkHttpClient.Builder().build();
-                Request request = new Request.Builder().url(imageUrl).build();
-                Response response = client.newCall(request).execute();
-                InputStream inputStream = response.body().byteStream();
-                myDiskLruCache.putCache(imageUrl, inputStream);
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return false;
-        }
     }
 }

@@ -14,19 +14,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleBlockAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
+import importnew.importnewclient.net.HttpManager;
+import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
+import importnew.importnewclient.utils.SecondCache;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 /**
@@ -44,26 +43,15 @@ public class HomePageFragment extends Fragment {
 
     private ArticleBlockWorker articleBlockWorker;
 
-    private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+    private SecondCache mSecondCache;
 
-
-            super.onScrollStateChanged(recyclerView, newState);
-
-
-        }
-
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-        }
-    };
+    private OkHttpClient httpClient;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mContext = context;
+        mSecondCache = SecondCache.getInstance(context);
     }
 
     public HomePageFragment() {
@@ -90,7 +78,7 @@ public class HomePageFragment extends Fragment {
             @Override
             public void onRefresh() {
                 mRefreshLayout.setRefreshing(true);
-                getHtmlAndParser();
+                refreshHomePage();
             }
         });
 
@@ -102,7 +90,6 @@ public class HomePageFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
         getHtmlAndParser();
 
-        mRecyclerView.addOnScrollListener(onScrollListener);
 
     }
 
@@ -115,6 +102,11 @@ public class HomePageFragment extends Fragment {
 
         if (mAdapter != null)
             mAdapter.flushCache();
+
+        if (mSecondCache != null) {
+            mSecondCache.flushCache();
+        }
+
     }
 
     @Override
@@ -130,7 +122,31 @@ public class HomePageFragment extends Fragment {
             articleBlockWorker.cancel(true);
         }
 
-        mRecyclerView.removeOnScrollListener(onScrollListener);
+    }
+
+    /**
+     * 刷新页面
+     */
+    private void refreshHomePage() {
+
+        if (httpClient == null)
+            httpClient = HttpManager.getInstance(mContext).getClient();
+        new RefreshWorker(new RefreshWorker.OnRefreshListener() {
+            @Override
+            public void onRefresh(String html) {
+
+                if (html == null) {
+                    mRefreshLayout.setRefreshing(false);
+                } else {
+                    List<ArticleBlock> blocks = HomePagerParser.paserHomePage(html);
+                    articles.clear();
+                    articles.addAll(blocks);
+                    mAdapter.notifyDataSetChanged();
+                    mRefreshLayout.setRefreshing(false);
+                }
+            }
+        }, httpClient, URLManager.HOMEPAGE);
+
     }
 
     private void getHtmlAndParser() {
@@ -144,24 +160,18 @@ public class HomePageFragment extends Fragment {
 
         @Override
         protected List<ArticleBlock> doInBackground(String... params) {
-            try {
-                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
-                        .readTimeout(10, TimeUnit.SECONDS).build();
-                Request request = new Request.Builder().url(params[0]).build();
-                Response response = client.newCall(request).execute();
-                if (response.isSuccessful()) {
 
-                    List<ArticleBlock> articleBlockList = HomePagerParser.paserHomePage(response.body().string());
-                    return articleBlockList;
+            String url = params[0];
+            String html = mSecondCache.getResponseFromDiskCache(url);
+            if (html == null)
+                html = mSecondCache.getResponseFromNetwork(url);
 
-                } else {
-                    return null;
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (html != null)
+                return HomePagerParser.paserHomePage(html);
+            else
                 return null;
-            }
+
+
         }
 
         @Override
