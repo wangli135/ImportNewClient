@@ -11,6 +11,8 @@
     <string name="hot_articles">热门文章</string>
     <string name="more_contents">更多频道</string>
 
+    <string name="network_unable">网络连接不可用</string>
+
     <array name="pageTitle">
         <item>资讯</item>
         <item>Web</item>

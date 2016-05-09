@@ -101,13 +101,18 @@ public class SecondCache {
     public String getResponseFromNetwork(String url) {
 
         try {
-            Request request = new Request.Builder().url(url).cacheControl(new CacheControl.Builder().onlyIfCached().build()).build();
+            Request request = new Request.Builder().url(url).cacheControl(
+                    new CacheControl.Builder().noCache().build()
+            ).build();
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful()) {
+
                 InputStream inputStream = response.body().byteStream();
                 //添加到硬盘缓存
                 putCache(url, inputStream);
+
                 return getResponseFromDiskCache(url);
+
             } else {
                 return null;
             }

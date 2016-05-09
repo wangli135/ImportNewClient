@@ -12,13 +12,16 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleBlockAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
+import importnew.importnewclient.net.ConnectionManager;
 import importnew.importnewclient.net.HttpManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
@@ -65,7 +68,23 @@ public class HomePageFragment extends BaseFragment {
             public void onRefresh() {
 
                 mRefreshLayout.setRefreshing(true);
-                refreshHomePage();
+                if (ConnectionManager.isOnline(mContext)) {
+                    refreshHomePage();
+                } else {
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (ConnectionManager.isOnline(mContext)) {
+                        refreshHomePage();
+                    } else {
+                        mRefreshLayout.setRefreshing(false);
+                        Toast.makeText(mContext, R.string.network_unable, Toast.LENGTH_SHORT).show();
+                    }
+                }
+
             }
         });
 
@@ -134,7 +153,7 @@ public class HomePageFragment extends BaseFragment {
                 });
 
             }
-        }, httpClient, URLManager.HOMEPAGE);
+        }, mSecondCache, URLManager.HOMEPAGE);
     }
 
     private void getHtmlAndParser() {

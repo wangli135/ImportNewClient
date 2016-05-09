@@ -13,13 +13,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleAdapter;
 import importnew.importnewclient.bean.Article;
+import importnew.importnewclient.net.ConnectionManager;
 import importnew.importnewclient.net.HttpManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.parser.ArticlesParser;
@@ -88,7 +91,24 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
             @Override
             public void onRefresh() {
                 mSwipeRefreshLayout.setRefreshing(true);
-                refreshArticles();
+                if (ConnectionManager.isOnline(mContext)) {
+                    refreshArticles();
+                } else {
+
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (ConnectionManager.isOnline(mContext)) {
+                        refreshArticles();
+                    } else {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(mContext, R.string.network_unable, Toast.LENGTH_SHORT).show();
+                    }
+
+                }
 
             }
         });
@@ -106,6 +126,8 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
 
     private void refreshArticles() {
+
+
         if (httpClient == null)
             httpClient = HttpManager.getInstance(getContext()).getClient();
         new RefreshWorker(new RefreshWorker.OnRefreshListener() {
@@ -115,10 +137,10 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
                 if (html != null) {
                     List<Article> list = ArticlesParser.parserArtciles(html);
                     for (int i = 0; i < list.size(); i++) {
-                       if(!mArticles.contains(list.get(i))){
-                           mArticles.add(i,list.get(i));
-                       }else
-                           break;
+                        if (!mArticles.contains(list.get(i))) {
+                            mArticles.add(i, list.get(i));
+                        } else
+                            break;
                     }
                 }
 
@@ -131,7 +153,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
                 });
 
             }
-        }, httpClient, category + "1");
+        }, mSecondCache, category + "1");
     }
 
     @Override

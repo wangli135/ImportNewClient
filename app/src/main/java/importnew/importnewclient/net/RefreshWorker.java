@@ -2,12 +2,7 @@ package importnew.importnewclient.net;
 
 import android.os.AsyncTask;
 
-import java.io.IOException;
-
-import okhttp3.CacheControl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import importnew.importnewclient.utils.SecondCache;
 
 /**
  * 刷新工具类
@@ -20,13 +15,13 @@ public class RefreshWorker {
     }
 
     private OnRefreshListener onRefreshListener;
-    private OkHttpClient httpClient;
+    private SecondCache secondCache;
     private String url;
 
 
-    public RefreshWorker(OnRefreshListener onRefreshListener, OkHttpClient httpClient, String url) {
+    public RefreshWorker(OnRefreshListener onRefreshListener, SecondCache secondCache, String url) {
         this.onRefreshListener = onRefreshListener;
-        this.httpClient = httpClient;
+        this.secondCache = secondCache;
         this.url = url;
 
         new RefershAsyncTask().execute(url);
@@ -41,18 +36,13 @@ public class RefreshWorker {
         @Override
         protected String doInBackground(String... params) {
             try {
-                String urlStr = params[0];
-                Request request = new Request.Builder().url(urlStr).cacheControl(new CacheControl.Builder().noCache().build()).build();
-                Response response = httpClient.newCall(request).execute();
+                String html = secondCache.getResponseFromNetwork(params[0]);
 
                 if (onRefreshListener != null)
-                    onRefreshListener.onRefresh(response.body().string());
+                    onRefreshListener.onRefresh(html);
 
-                if (response.isSuccessful()) {
-                    return response.body().string();
-                }
                 return null;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
