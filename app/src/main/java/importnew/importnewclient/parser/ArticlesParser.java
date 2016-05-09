@@ -24,23 +24,27 @@ public class ArticlesParser {
         List<Article> lists=new LinkedList<>();
         Article article=null;
 
-        Element grid_8 = Jsoup.parse(html).body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first();
+        try{
+            Element grid_8 = Jsoup.parse(html).body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first();
 
-        Elements post_floated_thumb=grid_8.getElementsByTag(Nodes.Tag.DIV);
+            Elements post_floated_thumb=grid_8.getElementsByTag(Nodes.Tag.DIV);
 
-        for(Element floated_thumb:post_floated_thumb){
+            for(Element floated_thumb:post_floated_thumb){
 
-            if(floated_thumb.className().equals(Nodes.Class.POST_FLOATED_THUMB)) {
+                if(floated_thumb.className().equals(Nodes.Class.POST_FLOATED_THUMB)) {
 
-                article=parserArticle(floated_thumb);
-                lists.add(article);
+                    article=parserArticle(floated_thumb);
+                    lists.add(article);
 
-            }else if(floated_thumb.className().equals(Nodes.Class.NAVIGATION)){
-                break;
+                }else if(floated_thumb.className().equals(Nodes.Class.NAVIGATION)){
+                    break;
+                }
+
             }
-
+        }catch (Exception e){
+            e.printStackTrace();
+            return lists;
         }
-
         return lists;
     }
 

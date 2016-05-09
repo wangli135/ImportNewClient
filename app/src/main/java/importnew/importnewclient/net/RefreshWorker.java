@@ -13,9 +13,9 @@ import okhttp3.Response;
  * 刷新工具类
  * Created by Xingfeng on 2016/5/7.
  */
-public class RefreshWorker{
+public class RefreshWorker {
 
-    public interface OnRefreshListener{
+    public interface OnRefreshListener {
         void onRefresh(String html);
     }
 
@@ -36,16 +36,19 @@ public class RefreshWorker{
         this.onRefreshListener = onRefreshListener;
     }
 
-    class RefershAsyncTask extends AsyncTask<String,Void,String>{
+    class RefershAsyncTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
             try {
-                String urlStr=params[0];
-                Request request=new Request.Builder().url(urlStr).cacheControl(new CacheControl.Builder().noCache().build())
-                        .build();
-                Response response=httpClient.newCall(request).execute();
-                if(response.isSuccessful()){
+                String urlStr = params[0];
+                Request request = new Request.Builder().url(urlStr).cacheControl(new CacheControl.Builder().noCache().build()).build();
+                Response response = httpClient.newCall(request).execute();
+
+                if (onRefreshListener != null)
+                    onRefreshListener.onRefresh(response.body().string());
+
+                if (response.isSuccessful()) {
                     return response.body().string();
                 }
                 return null;
@@ -55,12 +58,6 @@ public class RefreshWorker{
             return null;
         }
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            if(onRefreshListener!=null)
-                onRefreshListener.onRefresh(s);
-        }
     }
 
 }

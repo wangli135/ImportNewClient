@@ -130,6 +130,12 @@ public class Article implements Serializable{
         this.bitmap = bitmap;
     }
 
+
+    /**
+     * 两篇文章的URL相同，则认为文章相等
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -137,21 +143,12 @@ public class Article implements Serializable{
 
         Article article = (Article) o;
 
-        if (url != null ? !url.equals(article.url) : article.url != null) return false;
-        if (title != null ? !title.equals(article.title) : article.title != null) return false;
-        if (desc != null ? !desc.equals(article.desc) : article.desc != null) return false;
-        if (body != null ? !body.equals(article.body) : article.body != null) return false;
-        return date != null ? date.equals(article.date) : article.date == null;
+        return url.equals(article.url);
 
     }
 
     @Override
     public int hashCode() {
-        int result = url != null ? url.hashCode() : 0;
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (desc != null ? desc.hashCode() : 0);
-        result = 31 * result + (body != null ? body.hashCode() : 0);
-        result = 31 * result + (date != null ? date.hashCode() : 0);
-        return result;
+        return url.hashCode();
     }
 }

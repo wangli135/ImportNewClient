@@ -4,8 +4,9 @@
     android:layout_height="wrap_content">
 
     <ImageView
+        android:layout_gravity="center_horizontal"
         android:id="@+id/article_body_img"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
 </LinearLayout>

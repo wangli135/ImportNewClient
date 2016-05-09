@@ -12,7 +12,7 @@ import importnew.importnewclient.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MoreContentsFragment extends Fragment {
+public class MoreContentsFragment extends BaseFragment {
 
 
     public MoreContentsFragment() {

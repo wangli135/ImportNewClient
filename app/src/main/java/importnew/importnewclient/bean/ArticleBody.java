@@ -1,104 +1,111 @@
 package importnew.importnewclient.bean;
 
-import java.io.File;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * 文章正文部分
  * Created by Xingfeng on 2016/5/5.
  */
-public class ArticleBody{
+public class ArticleBody implements Iterable<Node> {
 
-    public static class Node{
+    /**
+     * 文章标题部分节点
+     */
+    private Element entryHeader;
 
-        private Tag tag;
-        private String text;
-        //针对img和a标签
-        private String url;
+    /**
+     * 文章正文内容部分
+     */
+    private Element entry;
 
-        private List<Node> childNodes;
+    /**
+     * 文章中所有的节点链表
+     */
+    private ArrayList<Node> elements;
 
-        public Node() {
-            childNodes=new ArrayList<>();
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public Node(Tag tag, String text) {
-            this.tag = tag;
-            this.text = text;
-            childNodes=new ArrayList<>();
-        }
-
-        public Tag getTag() {
-            return tag;
-        }
-
-        public void setTag(Tag tag) {
-            this.tag = tag;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public void add(Node child){
-            childNodes.add(child);
-        }
-
-        public Node get(int index){
-            return childNodes.get(index);
-        }
-
-        public List<Node> childNodes(){
-            return childNodes;
-        }
+    public ArticleBody() {
+        elements = new ArrayList<>();
     }
 
-    private ArrayList<Node> articleBodys;
-
-    public ArticleBody(){
-        articleBodys=new ArrayList<>();
+    public void addEntryHeader(Element entryHeader) {
+        this.entryHeader = entryHeader;
+        elements.add(entryHeader.child(0));
     }
 
-    public void add(Node node){
-        articleBodys.add(node);
+    public void addEntry(Element entry) {
+        this.entry = entry;
+
+        //将内容节点添加到链表中
+        addArticleElementToList(entry);
     }
 
-    public Iterable<Node> iterable(){
-        return articleBodys;
+    /**
+     * 将父节点中有用的节点添加到链表中
+     */
+    private void addArticleElementToList(Element parent) {
+
+        for (Node childNode : parent.childNodes()) {
+
+            if (childNode instanceof Element) {
+                Element element = (Element) childNode;
+
+                //br、hr
+                if (element.childNodeSize() == 0) {
+                    elements.add(element);
+                } else if (element.childNodeSize() == 1 && element.hasText()) {
+                    elements.add(element);
+                } else if (element.childNodeSize() == 1) {
+                    addArticleElementToList(element);
+                } else if (element.childNodeSize() == 2) {
+
+                    if (element.childNode(0) instanceof TextNode || element.childNode(1) instanceof TextNode) {
+                        elements.add(element);
+                    } else
+                        addArticleElementToList(element);
+
+                } else {
+                    addArticleElementToList(element);
+                }
+            } else if (childNode instanceof TextNode) {
+                elements.add(childNode);
+            }
+
+        }
+
     }
 
-    public boolean isEmpty(){
-        return articleBodys.isEmpty();
+
+    /**
+     * 获得文章标题
+     *
+     * @return
+     */
+    public String getArticleTitle() {
+
+        Element title = (Element) elements.get(0);
+        return title.text();
     }
 
-    public int size(){
-        return articleBodys.size();
+    public int size() {
+        return elements.size();
     }
 
-    public Node get(int index){
-        return articleBodys.get(index);
+    public Node get(int index) {
+        return elements.get(index);
     }
 
     @Override
-    public String toString() {
-
-        StringBuilder sb=new StringBuilder();
-        for(Node node:articleBodys)
-        sb.append(node.getTag()+": "+node.getText()+ File.separator);
-
-        return sb.toString();
+    public Iterator<Node> iterator() {
+        return elements.iterator();
     }
+
+    public boolean isEmpty() {
+        return elements.isEmpty();
+    }
+
 }

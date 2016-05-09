@@ -125,6 +125,12 @@ public class Nodes {
 
         public static final String H3="h3";
 
+        public static final String H4="h4";
+
+        public static final String H5="h5";
+
+        public static final String H6="h6";
+
         public static final String A="a";
 
         public static final String P="p";
@@ -138,6 +144,10 @@ public class Nodes {
         public static final String BR="br";
 
         public static final String STRONG="strong";
+
+        public static final String UL="ul";
+
+        public static final String LI="li";
 
     }
 

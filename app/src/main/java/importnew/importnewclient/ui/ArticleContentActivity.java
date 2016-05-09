@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.widget.ListView;
 
@@ -92,7 +93,7 @@ public class ArticleContentActivity extends AppCompatActivity {
             if(html==null)
                 html=mSecondCache.getResponseFromNetwork(params[0]);
 
-            if(html!=null){
+            if(!TextUtils.isEmpty(html)){
                 return ArticleBodyParser.parser(html);
             }
 

@@ -9,7 +9,6 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.URLSpan;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +16,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.ArticleBody;
-import importnew.importnewclient.bean.Tag;
+import importnew.importnewclient.pages.Nodes;
 import importnew.importnewclient.utils.ThridCache;
 
 /**
@@ -33,7 +36,7 @@ public class ArticleBodyAdapter extends BaseAdapter {
     private ArticleBody articleBody;
     private LayoutInflater mInflater;
 
-   private ThridCache mThridCache;
+    private ThridCache mThridCache;
 
     private Set<BitmapWorkerTask> tasks;
 
@@ -41,19 +44,36 @@ public class ArticleBodyAdapter extends BaseAdapter {
     public ArticleBodyAdapter(Context context, ArticleBody articleBody) {
         this.articleBody = articleBody;
         mInflater = LayoutInflater.from(context);
-       mThridCache=ThridCache.getInstance(context);
+        mThridCache = ThridCache.getInstance(context);
         tasks = new HashSet<>();
     }
 
 
+    /**
+     * 一种图片，一种文字
+     *
+     * @param position
+     * @return 0表示文字，1表示图片
+     */
     @Override
     public int getItemViewType(int position) {
-        return articleBody.get(position).getTag().ordinal();
+
+        Node node = articleBody.get(position);
+        if (node instanceof TextNode)
+            return 0;
+        else if (node instanceof Element) {
+            Element element = (Element) node;
+            if (element.tagName().equals(Nodes.Tag.IMG))
+                return 1;
+            else
+                return 0;
+        }
+        return 0;
     }
 
     @Override
     public int getViewTypeCount() {
-        return Tag.values().length;
+        return 2;
     }
 
     @Override
@@ -74,80 +94,96 @@ public class ArticleBodyAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        ArticleBody.Node node = articleBody.get(position);
+        Node node = articleBody.get(position);
         ViewHolder viewHolder = null;
         if (convertView == null) {
-            if (getItemViewType(position) <= Tag.H3.ordinal() || getItemViewType(position) == Tag.STRONG.ordinal()) {
-                convertView = mInflater.inflate(R.layout.article_body_h, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.textView = (TextView) convertView.findViewById(R.id.article_h);
-                if (getItemViewType(position) == Tag.H1.ordinal())
-                    viewHolder.textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-                else if (getItemViewType(position) == Tag.H2.ordinal())
-                    viewHolder.textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-                else if (getItemViewType(position) == Tag.H3.ordinal() || getItemViewType(position) == Tag.STRONG.ordinal())
-                    viewHolder.textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            } else if (getItemViewType(position) == Tag.IMG.ordinal()) {
-                convertView = mInflater.inflate(R.layout.article_body_img, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.imageView = (ImageView) convertView.findViewById(R.id.article_body_img);
-            } else if (getItemViewType(position) == Tag.A.ordinal()) {
-                convertView = mInflater.inflate(R.layout.article_body_p, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.textView = (TextView) convertView.findViewById(R.id.article_p);
-                viewHolder.textView.setTextColor(Color.BLUE);
-            } else if (getItemViewType(position) == Tag.P.ordinal()) {
 
-
-                convertView = mInflater.inflate(R.layout.article_body_p, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.textView = (TextView) convertView.findViewById(R.id.article_p);
-
+            viewHolder = new ViewHolder();
+            if (getItemViewType(position) == 0) {
+                convertView = mInflater.inflate(R.layout.article_body_text, parent, false);
+                viewHolder.textView = (TextView) convertView.findViewById(R.id.article_body_text);
 
             } else {
-                convertView = mInflater.inflate(R.layout.article_body_p, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.textView = (TextView) convertView.findViewById(R.id.article_p);
-
+                convertView = mInflater.inflate(R.layout.article_body_img, parent, false);
+                viewHolder.imageView = (ImageView) convertView.findViewById(R.id.article_body_img);
             }
+
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if (node.getTag() == Tag.A) {
-            SpannableString spannableString = new SpannableString(node.getText());
-            spannableString.setSpan(new ForegroundColorSpan(Color.BLUE), 0, node.getText().length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-            spannableString.setSpan(new URLSpan(node.getUrl()), 0, node.getText().length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-            viewHolder.textView.setText(spannableString);
-            viewHolder.textView.setMovementMethod(new LinkMovementMethod());
-        } else if (node.getTag() == Tag.P) {
+        //恢复文本默认设置
+        if(viewHolder.textView!=null){
+            viewHolder.textView.setTextColor(Color.parseColor("#3C3F41"));
+            viewHolder.textView.setTextSize(14);
+        }
 
-            SpannableString spannableString = new SpannableString(node.getText());
-            int start = 0, end = 0;
-            for (ArticleBody.Node childNode : node.childNodes()) {
 
-                if (childNode.getTag() == Tag.STRONG) {
-                    end = start + childNode.getText().length();
-                    spannableString.setSpan(new ForegroundColorSpan(Color.BLACK), start, end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                    start=end;
-                } else if (childNode.getTag() == Tag.A) {
-                    end= start + childNode.getText().length();
-                    spannableString.setSpan(new URLSpan(childNode.getUrl()), start,end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                    viewHolder.textView.setMovementMethod(new LinkMovementMethod());
-                    start=end;
+        if (node instanceof TextNode) {
+            viewHolder.textView.setText(((TextNode) node).text());
+        } else {
+            Element element = (Element) node;
+            if (element.tagName().equals(Nodes.Tag.IMG)) {
+                viewHolder.imageView.setImageResource(R.drawable.emptyview);
+                loadImgs(viewHolder.imageView, element.attr(Nodes.Attribute.SRC));
+            } else if (element.tagName().equals(Nodes.Tag.H1)) {
+                viewHolder.textView.setTextSize(17);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+            } else if (element.tagName().equals(Nodes.Tag.H2)) {
+                viewHolder.textView.setTextSize(16);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+
+            } else if (element.tagName().equals(Nodes.Tag.H3) || element.tagName().equals(Nodes.Tag.STRONG)) {
+                viewHolder.textView.setTextSize(15);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+
+            } else if (element.tagName().equals(Nodes.Tag.H4)) {
+                viewHolder.textView.setTextSize(14);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+
+            } else if (element.tagName().equals(Nodes.Tag.H5)) {
+                viewHolder.textView.setTextSize(13);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+            } else if (element.tagName().equals(Nodes.Tag.H6)) {
+                viewHolder.textView.setTextSize(12);
+                viewHolder.textView.setTextColor(Color.BLACK);
+                viewHolder.textView.setText(element.text());
+            } else if (element.tagName().equals(Nodes.Tag.A)) {
+                SpannableString spannableString = new SpannableString(element.text());
+                spannableString.setSpan(new URLSpan(element.attr(Nodes.Attribute.HREF)), 0, spannableString.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                spannableString.setSpan(new ForegroundColorSpan(Color.BLUE), 0, spannableString.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                viewHolder.textView.setMovementMethod(new LinkMovementMethod());
+                viewHolder.textView.setText(spannableString);
+            } else if (element.childNodeSize() == 2) {
+
+                SpannableString spannableString = new SpannableString(element.text());
+                int start = 0, end = 0;
+                for (Node nodes : element.dataNodes()) {
+                    if (nodes instanceof TextNode) {
+                        start += ((TextNode) nodes).text().length();
+                    } else {
+                        element = (Element) nodes;
+                        if (element.tagName().equals(Nodes.Tag.A)) {
+                            end = start + element.text().length();
+                            spannableString.setSpan(new URLSpan(element.attr(Nodes.Attribute.HREF)), start, end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(new ForegroundColorSpan(Color.BLUE), start, end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                        }
+                    }
                 }
-                else {
-                    start += childNode.getText().length();
-                }
+                viewHolder.textView.setMovementMethod(new LinkMovementMethod());
+                viewHolder.textView.setText(spannableString);
+
+            } else {
+                viewHolder.textView.setText(element.text());
             }
+        }
 
-            viewHolder.textView.setText(spannableString);
-        } else if (node.getTag() == Tag.IMG) {
-            viewHolder.imageView.setImageResource(R.drawable.img_empty);
-            loadImgs(viewHolder.imageView, node.getUrl());
-        } else
-            viewHolder.textView.setText(node.getText());
 
         return convertView;
     }
@@ -182,7 +218,7 @@ public class ArticleBodyAdapter extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
 
-        return articleBody.get(position).getTag() == Tag.IMG || articleBody.get(position).getTag() == Tag.A;
+        return getItemViewType(position) == 1;
 
     }
 
@@ -208,9 +244,9 @@ public class ArticleBodyAdapter extends BaseAdapter {
 
             imageUrl = params[0];
 
-            Bitmap bitmap=mThridCache.getBitmapFromDiskCache(imageUrl);
-            if(bitmap==null){
-                bitmap=mThridCache.getBitmapFromNetwork(imageUrl);
+            Bitmap bitmap = mThridCache.getBitmapFromDiskCache(imageUrl);
+            if (bitmap == null) {
+                bitmap = mThridCache.getBitmapFromNetwork(imageUrl);
             }
             return bitmap;
         }

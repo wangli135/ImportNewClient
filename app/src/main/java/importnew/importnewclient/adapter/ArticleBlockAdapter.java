@@ -68,7 +68,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             verticalArticleView.setArticle(article);
             verticalArticleView.setText(article.getTitle());
             verticalArticleView.setTag(article.getImgUrl());
-            verticalArticleView.setImageResource(R.drawable.img_empty);
+            verticalArticleView.setImageResource(R.drawable.emptyview);
             loadBitmaps(verticalArticleView, article.getImgUrl());
         }
 

@@ -1,7 +1,6 @@
 package importnew.importnewclient.ui;
 
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,35 +23,22 @@ import importnew.importnewclient.net.HttpManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
-import importnew.importnewclient.utils.SecondCache;
-import okhttp3.OkHttpClient;
 
 
 /**
  * 首页Fragment
  * A simple {@link Fragment} subclass.
  */
-public class HomePageFragment extends Fragment {
+public class HomePageFragment extends BaseFragment {
 
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mRefreshLayout;
-    private Context mContext;
 
     private List<ArticleBlock> articles;
     private ArticleBlockAdapter mAdapter;
 
     private ArticleBlockWorker articleBlockWorker;
 
-    private SecondCache mSecondCache;
-
-    private OkHttpClient httpClient;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context;
-        mSecondCache = SecondCache.getInstance(context);
-    }
 
     public HomePageFragment() {
     }
@@ -77,6 +63,7 @@ public class HomePageFragment extends Fragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+
                 mRefreshLayout.setRefreshing(true);
                 refreshHomePage();
             }
@@ -103,9 +90,6 @@ public class HomePageFragment extends Fragment {
         if (mAdapter != null)
             mAdapter.flushCache();
 
-        if (mSecondCache != null) {
-            mSecondCache.flushCache();
-        }
 
     }
 
@@ -135,18 +119,22 @@ public class HomePageFragment extends Fragment {
             @Override
             public void onRefresh(String html) {
 
-                if (html == null) {
-                    mRefreshLayout.setRefreshing(false);
-                } else {
+                if (html != null) {
                     List<ArticleBlock> blocks = HomePagerParser.paserHomePage(html);
                     articles.clear();
                     articles.addAll(blocks);
-                    mAdapter.notifyDataSetChanged();
-                    mRefreshLayout.setRefreshing(false);
                 }
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                        mRefreshLayout.setRefreshing(false);
+                    }
+                });
+
             }
         }, httpClient, URLManager.HOMEPAGE);
-
     }
 
     private void getHtmlAndParser() {

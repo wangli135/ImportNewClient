@@ -14,6 +14,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import importnew.importnewclient.net.HttpManager;
+import okhttp3.CacheControl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -100,13 +101,13 @@ public class SecondCache {
     public String getResponseFromNetwork(String url) {
 
         try {
-            Request request = new Request.Builder().url(url).build();
+            Request request = new Request.Builder().url(url).cacheControl(new CacheControl.Builder().onlyIfCached().build()).build();
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful()) {
                 InputStream inputStream = response.body().byteStream();
                 //添加到硬盘缓存
                 putCache(url, inputStream);
-                return response.body().string();
+                return getResponseFromDiskCache(url);
             } else {
                 return null;
             }

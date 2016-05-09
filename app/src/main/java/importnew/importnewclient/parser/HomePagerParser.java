@@ -31,20 +31,28 @@ public class HomePagerParser {
         List<ArticleBlock> lists = new ArrayList<>();
         ArticleBlock articleBlock = null;
 
-        //解析HTML
-        Document homepage = Jsoup.parse(homePageContent);
-        //文章正文主体部分
-        Element container = homepage.body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first()
-                .getElementsByClass(Nodes.Class.CONTAINER).first().getElementById(Nodes.Id.HOMEPAGE_ARTICE);
+        try{
+            //解析HTML
+            Document homepage = Jsoup.parse(homePageContent);
+            //文章正文主体部分
 
-        //解析推荐阅读子结点
-        parserRecommendRead(lists, container.getElementById(Nodes.Id.RECOMMEND_READ));
+            Element container = homepage.body().getElementById(Nodes.Id.WRAPPER).getElementsByTag(Nodes.Tag.DIV).first()
+                    .getElementsByTag(Nodes.Tag.DIV).first().getElementById(Nodes.Id.HOMEPAGE_ARTICE);
 
-        //解析最新文章和Java干货子节点
-        parserLatestAndJava(lists, container.getElementById(Nodes.Id.LATEST_JAVA));
+            //解析推荐阅读子结点
+            parserRecommendRead(lists, container.getElementById(Nodes.Id.RECOMMEND_READ));
 
-        //解析业界动态和最新技术
-        parserNewsAndTech(lists, container.getElementById(Nodes.Id.NEWS_TECH));
+            //解析最新文章和Java干货子节点
+            parserLatestAndJava(lists, container.getElementById(Nodes.Id.LATEST_JAVA));
+
+            //解析业界动态和最新技术
+            parserNewsAndTech(lists, container.getElementById(Nodes.Id.NEWS_TECH));
+        }catch (Exception e){
+            e.printStackTrace();
+            return lists;
+        }
+
+
 
         return lists;
     }

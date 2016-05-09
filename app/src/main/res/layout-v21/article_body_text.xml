@@ -7,11 +7,11 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:textStyle="bold"
-        android:textColor="#2B2B2B"
+        android:textColor="#3C3F41"
         android:padding="3dp"
+        android:textSize="14sp"
         android:layout_gravity="center_vertical"
-        android:id="@+id/article_h"
+        android:id="@+id/article_body_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
