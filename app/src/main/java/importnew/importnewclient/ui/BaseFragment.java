@@ -3,17 +3,23 @@ package importnew.importnewclient.ui;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
+import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.SecondCache;
-import okhttp3.OkHttpClient;
 
 /**
  * Created by Xingfeng on 2016/5/9.
  */
 public class BaseFragment extends Fragment {
 
+    public interface OnArticleSelectedListener{
+        void onArticleSelectedListener(Article article);
+    }
+
+
+    protected OnArticleSelectedListener onArticleSelectedListener;
     protected Context mContext;
     protected SecondCache mSecondCache;
-    protected OkHttpClient httpClient;
+//    protected OkHttpClient httpClient;
 
     @Override
     public void onAttach(Context context) {
@@ -28,4 +34,7 @@ public class BaseFragment extends Fragment {
         if(mSecondCache!=null)
             mSecondCache.flushCache();
     }
+
+
+
 }

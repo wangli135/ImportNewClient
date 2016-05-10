@@ -1,6 +1,7 @@
 package importnew.importnewclient.adapter;
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,9 @@ import java.util.Set;
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.bean.ArticleBlock;
+import importnew.importnewclient.ui.ArticleContentActivity;
+import importnew.importnewclient.ui.BaseFragment;
+import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.ThridCache;
 import importnew.importnewclient.view.VerticalArticleView;
 
@@ -39,12 +43,20 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
 
     private List<ArticleBlock> datas;
 
-    public ArticleBlockAdapter(Context context, RecyclerView recyclerView, List<ArticleBlock> datas) {
+    private Activity activity;
+    /**
+     * 选择的文章
+     */
+    private Article selectedArticle;
+
+    public ArticleBlockAdapter(Activity activity, RecyclerView recyclerView, List<ArticleBlock> datas) {
         this.datas = datas;
         this.mRecycleView = recyclerView;
         taskCollection = new HashSet<>();
 
-        mThridCache=ThridCache.getInstance(context);
+        this.activity = activity;
+        mThridCache = ThridCache.getInstance(activity);
+
     }
 
     @Override
@@ -70,6 +82,21 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             verticalArticleView.setTag(article.getImgUrl());
             verticalArticleView.setImageResource(R.drawable.emptyview);
             loadBitmaps(verticalArticleView, article.getImgUrl());
+
+            verticalArticleView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedArticle = ((VerticalArticleView) v).getArticle();
+                    if (activity instanceof BaseFragment.OnArticleSelectedListener) {
+                        ((BaseFragment.OnArticleSelectedListener) activity).onArticleSelectedListener(selectedArticle);
+                    }
+
+                    Intent intent = new Intent(activity, ArticleContentActivity.class);
+                    intent.putExtra(Constants.Key.ARTICLE, selectedArticle);
+                    activity.startActivityForResult(intent, Constants.Code.REQUEST_CODE);
+
+                }
+            });
         }
 
     }
@@ -103,15 +130,7 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             views[2] = (VerticalArticleView) itemView.findViewById(R.id.third_article);
             views[3] = (VerticalArticleView) itemView.findViewById(R.id.fourth_article);
             views[4] = (VerticalArticleView) itemView.findViewById(R.id.fifth_article);
-
-            for (int i = 0; i < views.length; i++) {
-
-                views[i].setStartActivity(true);
-
-            }
         }
-
-
     }
 
     public void loadBitmaps(VerticalArticleView articleView, String imageUrl) {
@@ -155,9 +174,9 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
         protected Bitmap doInBackground(String... params) {
             imageUrl = params[0];
 
-            Bitmap bitmap=mThridCache.getBitmapFromDiskCache(imageUrl);
-            if(bitmap==null){
-                bitmap=mThridCache.getBitmapFromNetwork(imageUrl);
+            Bitmap bitmap = mThridCache.getBitmapFromDiskCache(imageUrl);
+            if (bitmap == null) {
+                bitmap = mThridCache.getBitmapFromNetwork(imageUrl);
             }
             return bitmap;
         }
@@ -173,9 +192,5 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
             taskCollection.remove(this);
 
         }
-
-
     }
-
-
 }

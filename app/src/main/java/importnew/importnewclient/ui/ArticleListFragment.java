@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +24,11 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleAdapter;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.net.ConnectionManager;
-import importnew.importnewclient.net.HttpManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.parser.ArticlesParser;
+import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
+import importnew.importnewclient.view.LoadMoreListView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,11 +36,12 @@ import importnew.importnewclient.utils.SecondCache;
 public class ArticleListFragment extends BaseFragment implements ListView.OnItemClickListener {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
-    private ListView mListView;
+    private LoadMoreListView mListView;
 
     private LinkedList<Article> mArticles;
     private ArticleAdapter mAdapter;
 
+    private boolean isLoading;//加载更多的标志
 
     /**
      * 文章分类URL
@@ -61,6 +64,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         if (savedInstanceState != null) {
             category = (String) savedInstanceState.get(ARTICLE_BASE_URL);
         }
+        pageNum = 1;
     }
 
     public static ArticleListFragment newInstance(String baseurl) {
@@ -113,11 +117,20 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
             }
         });
 
-        mListView = (ListView) view.findViewById(R.id.articles_lv);
+        mListView = (LoadMoreListView) view.findViewById(R.id.articles_lv);
         mArticles = new LinkedList<>();
         mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
+        mListView.setOnLoadMoreListener(new LoadMoreListView.OnLoadMoreListener() {
+            @Override
+            public void onLoad() {
+
+                isLoading = true;
+                loadArticles();
+
+            }
+        });
 
         mSecondCache = SecondCache.getInstance(getContext());
 
@@ -128,13 +141,11 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     private void refreshArticles() {
 
 
-        if (httpClient == null)
-            httpClient = HttpManager.getInstance(getContext()).getClient();
         new RefreshWorker(new RefreshWorker.OnRefreshListener() {
             @Override
             public void onRefresh(String html) {
 
-                if (html != null) {
+                if (!TextUtils.isEmpty(html)) {
                     List<Article> list = ArticlesParser.parserArtciles(html);
                     for (int i = 0; i < list.size(); i++) {
                         if (!mArticles.contains(list.get(i))) {
@@ -175,7 +186,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     private void loadArticles() {
         category = (String) getArguments().get(ARTICLE_BASE_URL);
-        String url = category + pageNum;
+        String url = category + (pageNum++);
         new ArticleGetTask().execute(url);
     }
 
@@ -184,10 +195,16 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
         Article article = mArticles.get(position);
         Intent intent = new Intent(getParentFragment().getActivity(), ArticleContentActivity.class);
-        intent.putExtra(ArticleContentActivity.ARTICLE_KEY, article);
-        mContext.startActivity(intent);
+        intent.putExtra(Constants.Key.ARTICLE, article);
+
+        if (getActivity() instanceof BaseFragment.OnArticleSelectedListener)
+            ((OnArticleSelectedListener) getActivity()).onArticleSelectedListener(article);
+
+        getActivity().startActivityForResult(intent, Constants.Code.REQUEST_CODE);
 
     }
+
+    private long lastTime;
 
     class ArticleGetTask extends AsyncTask<String, Void, List<Article>> {
 
@@ -196,10 +213,10 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
             String url = params[0];
             String html = mSecondCache.getResponseFromDiskCache(url);
-            if (html == null)
+            if (TextUtils.isEmpty(html))
                 html = mSecondCache.getResponseFromNetwork(url);
 
-            if (html != null) {
+            if (!TextUtils.isEmpty(html)) {
                 return ArticlesParser.parserArtciles(html);
             }
 
@@ -210,13 +227,28 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         protected void onPostExecute(List<Article> articles) {
             super.onPostExecute(articles);
 
-            if (articles == null) {
-                mSwipeRefreshLayout.setRefreshing(false);
-            } else {
-                mArticles.addAll(articles);
+            if (articles == null || articles.size() == 0) {
+                mListView.setNoContentToLoad();
                 mAdapter.notifyDataSetChanged();
-                mSwipeRefreshLayout.setRefreshing(false);
+
+                if (System.currentTimeMillis() - lastTime > 2000) {
+                    Toast.makeText(mContext, "没有更多文章了", Toast.LENGTH_SHORT).show();
+                    lastTime = System.currentTimeMillis();
+                }
+
+            } else if (articles.size() > 0) {
+
+                for (Article article : articles) {
+                    if (!mArticles.contains(article))
+                        mArticles.add(article);
+                }
+                mAdapter.notifyDataSetChanged();
+
             }
+
+            isLoading = false;
+            mSwipeRefreshLayout.setRefreshing(false);
+            mListView.dismissFootView();
         }
     }
 

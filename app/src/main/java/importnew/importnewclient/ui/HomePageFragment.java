@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +23,6 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleBlockAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.net.ConnectionManager;
-import importnew.importnewclient.net.HttpManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
@@ -132,13 +132,11 @@ public class HomePageFragment extends BaseFragment {
      */
     private void refreshHomePage() {
 
-        if (httpClient == null)
-            httpClient = HttpManager.getInstance(mContext).getClient();
         new RefreshWorker(new RefreshWorker.OnRefreshListener() {
             @Override
             public void onRefresh(String html) {
 
-                if (html != null) {
+                if(!TextUtils.isEmpty(html)) {
                     List<ArticleBlock> blocks = HomePagerParser.paserHomePage(html);
                     articles.clear();
                     articles.addAll(blocks);
@@ -170,10 +168,10 @@ public class HomePageFragment extends BaseFragment {
 
             String url = params[0];
             String html = mSecondCache.getResponseFromDiskCache(url);
-            if (html == null)
+            if (TextUtils.isEmpty(html))
                 html = mSecondCache.getResponseFromNetwork(url);
 
-            if (html != null)
+            if (!TextUtils.isEmpty(html))
                 return HomePagerParser.paserHomePage(html);
             else
                 return null;

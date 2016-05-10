@@ -1,6 +1,7 @@
 
 package importnew.importnewclient.ui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -17,10 +18,14 @@ import android.view.MenuItem;
 import java.util.List;
 
 import importnew.importnewclient.R;
+import importnew.importnewclient.bean.Article;
+import importnew.importnewclient.bean.ArticleBody;
+import importnew.importnewclient.utils.Constants;
+import importnew.importnewclient.view.TestActivity;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, BaseFragment.OnArticleSelectedListener {
 
     private int[] choicesId = {R.string.homepage, R.string.all_artciles, R.string.hot_articles, R.string.more_contents};
 
@@ -30,6 +35,7 @@ public class MainActivity extends AppCompatActivity
 
     private List<Fragment> fragmentList;
 
+    private Article selectedArticle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +66,30 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onArticleSelectedListener(Article article) {
+
+        selectedArticle = article;
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.Code.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+
+            boolean isFavourite = data.getBooleanExtra(Constants.Key.IS_FAVOURITE, false);
+            if (selectedArticle != null)
+                selectedArticle.setFavourite(false);
+
+            if (selectedArticle.getBody() == null) {
+                ArticleBody articleBody = (ArticleBody) data.getSerializableExtra(Constants.Key.ARTICLE_BODY);
+                selectedArticle.setBody(articleBody);
+            }
+
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -87,7 +117,10 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
 
-            Intent intent=new Intent(this,SearchActivity.class);
+           /* Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);*/
+
+            Intent intent = new Intent(this, TestActivity.class);
             startActivity(intent);
 
             return true;

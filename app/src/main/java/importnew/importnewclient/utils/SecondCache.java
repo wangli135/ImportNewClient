@@ -4,11 +4,9 @@ import android.content.Context;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +26,7 @@ public class SecondCache {
 
     //硬盘缓存
     private DiskLruCache mDiskLruCache;
-    //网络缓存
+    //网络缓存+硬盘缓存
     private OkHttpClient httpClient;
 
 
@@ -73,7 +71,19 @@ public class SecondCache {
      */
     public String getResponseFromDiskCache(String url) {
 
-        DiskLruCache.Snapshot snapshot = getCache(url);
+        try {
+            Request request = new Request.Builder().cacheControl(CacheControl.FORCE_CACHE).url(url).build();
+            Response response = httpClient.newCall(request).execute();
+            if(response.isSuccessful()){
+                return response.body().string();
+            }
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
+
+       /* DiskLruCache.Snapshot snapshot = getCache(url);
         if (snapshot == null)
             return null;
         else {
@@ -88,7 +98,7 @@ public class SecondCache {
                 e.printStackTrace();
             }
             return null;
-        }
+        }*/
 
     }
 
@@ -107,23 +117,22 @@ public class SecondCache {
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful()) {
 
-                InputStream inputStream = response.body().byteStream();
+                return response.body().string();
+
+               /* InputStream inputStream = response.body().byteStream();
                 //添加到硬盘缓存
                 putCache(url, inputStream);
 
-                return getResponseFromDiskCache(url);
+                return getResponseFromDiskCache(url);*/
 
             } else {
-                return null;
+                return "";
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            return "";
         }
-
-        return null;
-
-
     }
 
     /**

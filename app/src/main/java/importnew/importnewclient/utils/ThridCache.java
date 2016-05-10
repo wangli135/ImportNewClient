@@ -31,10 +31,10 @@ public class ThridCache {
 
     public static ThridCache getInstance(Context context) {
 
-        if(instance==null){
-            synchronized (ThridCache.class){
-                if(instance==null)
-                    instance=new ThridCache(context);
+        if (instance == null) {
+            synchronized (ThridCache.class) {
+                if (instance == null)
+                    instance = new ThridCache(context);
             }
         }
 
@@ -230,7 +230,6 @@ public class ThridCache {
         }
         return sb.toString();
     }
-
 
 
     private DiskLruCache.Snapshot getCache(String url) {

@@ -51,6 +51,12 @@ public class Article implements Serializable{
      */
     private Date date;
 
+    /**
+     * 是否是收藏的文章
+     */
+    private boolean isFavourite;
+
+
 
     public Article() {
     }
@@ -130,6 +136,14 @@ public class Article implements Serializable{
         this.bitmap = bitmap;
     }
 
+
+    public boolean isFavourite() {
+        return isFavourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        isFavourite = favourite;
+    }
 
     /**
      * 两篇文章的URL相同，则认为文章相等

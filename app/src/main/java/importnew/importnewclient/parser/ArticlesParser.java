@@ -3,6 +3,7 @@ package importnew.importnewclient.parser;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.text.ParseException;
@@ -52,25 +53,34 @@ public class ArticlesParser {
 
         Article article=new Article();
 
-        Element img=floated_thumb.getElementsByClass(Nodes.Class.ARTICLE_PIC).first().getElementsByTag(Nodes.Tag.A).first().getElementsByTag(Nodes.Tag.IMG).first();
-        article.setImgUrl(img.attr(Nodes.Attribute.SRC));
-        Element p=floated_thumb.getElementsByClass(Nodes.Class.ARTICLE_METADATA).first().getElementsByTag(Nodes.Tag.P).first();
-        Element title=p.getElementsByTag(Nodes.Tag.A).first();
-        article.setUrl(title.attr(Nodes.Attribute.HREF));
-        article.setTitle(title.attr(Nodes.Attribute.TITLE));
+        for(Node childNode:floated_thumb.childNodes()){
+            if(childNode instanceof Element){
+                Element element=(Element)childNode;
 
-        String text=p.text();
-        String right=text.substring(article.getTitle().length());
-        String[] array=right.split("\\|");
-        try {
-            article.setDate(new SimpleDateFormat("yyyy/MM/dd").parse(array[0].trim()));
-        } catch (ParseException e) {
-            e.printStackTrace();
+                if(element.className().equals(Nodes.Class.ARTICLE_PIC)){
+                    Element img=element.getElementsByTag(Nodes.Tag.A).first().getElementsByTag(Nodes.Tag.IMG).first();
+                    article.setImgUrl(img.attr(Nodes.Attribute.SRC));
+                }else if(element.className().equals(Nodes.Class.ARTICLE_METADATA)){
+                    Element p=element.getElementsByTag(Nodes.Tag.P).first();
+                    Element title=p.getElementsByTag(Nodes.Tag.A).first();
+                    article.setUrl(title.attr(Nodes.Attribute.HREF));
+                    article.setTitle(title.attr(Nodes.Attribute.TITLE));
+
+                    String text=p.text();
+                    String right=text.substring(article.getTitle().length());
+                    String[] array=right.split("\\|");
+                    try {
+                        article.setDate(new SimpleDateFormat("yyyy/MM/dd").parse(array[0].trim()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    Element span=floated_thumb.getElementsByClass(Nodes.Class.ARTICLE_METADATA).first().getElementsByTag(Nodes.Tag.SPAN).first();
+                    article.setDesc(span.getElementsByTag(Nodes.Tag.P).first().text());
+                }
+            }
         }
-
-
-        Element span=floated_thumb.getElementsByClass(Nodes.Class.ARTICLE_METADATA).first().getElementsByTag(Nodes.Tag.SPAN).first();
-        article.setDesc(span.getElementsByTag(Nodes.Tag.P).first().text());
 
         return article;
     }
