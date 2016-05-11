@@ -88,6 +88,7 @@ public class ArticleAdapter extends BaseAdapter {
 
         viewHolder.title.setText(article.getTitle());
         viewHolder.desc.setText(article.getDesc());
+        viewHolder.img.setImageResource(R.drawable.emptyview);
         viewHolder.commentNum.setText(article.getCommentNum() + "条评论");
 
         loadBitmaps(article.getImgUrl(), viewHolder.img);
@@ -97,7 +98,6 @@ public class ArticleAdapter extends BaseAdapter {
     private void loadBitmaps(String url, final ImageView imageView) {
 
         if (url == null) {
-            imageView.setImageResource(R.drawable.emptyview);
             return;
         }
 

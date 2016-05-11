@@ -19,9 +19,7 @@ import java.util.List;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.bean.ArticleBody;
 import importnew.importnewclient.utils.Constants;
-import importnew.importnewclient.view.TestActivity;
 
 
 public class MainActivity extends AppCompatActivity
@@ -43,6 +41,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(choicesId[0]);
         setSupportActionBar(toolbar);
 
 
@@ -77,14 +76,7 @@ public class MainActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.Code.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
 
-            boolean isFavourite = data.getBooleanExtra(Constants.Key.IS_FAVOURITE, false);
-            if (selectedArticle != null)
-                selectedArticle.setFavourite(false);
-
-            if (selectedArticle.getBody() == null) {
-                ArticleBody articleBody = (ArticleBody) data.getSerializableExtra(Constants.Key.ARTICLE_BODY);
-                selectedArticle.setBody(articleBody);
-            }
+            selectedArticle = data.getParcelableExtra(Constants.Key.ARTICLE);
 
         }
     }
@@ -117,12 +109,8 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
 
-           /* Intent intent = new Intent(this, SearchActivity.class);
-            startActivity(intent);*/
-
-            Intent intent = new Intent(this, TestActivity.class);
+            Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
-
             return true;
         }
 

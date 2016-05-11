@@ -67,7 +67,7 @@ public class ThridCache {
         }
 
         try {
-            mDiskLruCache = DiskLruCache.open(cacheFile, AppUtil.getAppVersion(context), 1, 10 * 1024 * 1024);
+            mDiskLruCache = DiskLruCache.open(cacheFile, AppUtil.getAppVersion(context), 1, 20 * 1024 * 1024);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -131,9 +131,11 @@ public class ThridCache {
 
         DiskLruCache.Snapshot snapshot = null;
 
+        Response response = null;
+
         try {
             Request request = new Request.Builder().url(imageUrl).build();
-            Response response = httpClient.newCall(request).execute();
+            response = httpClient.newCall(request).execute();
             InputStream inputStream = response.body().byteStream();
             //添加到硬盘缓存
             putCache(imageUrl, inputStream);
@@ -149,6 +151,9 @@ public class ThridCache {
             return bitmap;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (response != null)
+                response.body().close();
         }
 
         return null;

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +29,7 @@ public class AllArticlesFragment extends Fragment {
     private List<ArticleListFragment> fragments;
     private String[] pageTitles;
 
-   private FragmentPagerAdapter mAdapter;
+   private FragmentStatePagerAdapter mAdapter;
     public AllArticlesFragment() {
     }
 
@@ -63,7 +63,7 @@ public class AllArticlesFragment extends Fragment {
         fragments.add(ArticleListFragment.newInstance(URLManager.BASIC));
         fragments.add(ArticleListFragment.newInstance(URLManager.BOOKS));
         fragments.add(ArticleListFragment.newInstance(URLManager.TUTORIAL));
-        mAdapter=new FragmentPagerAdapter(getChildFragmentManager()) {
+        mAdapter=new FragmentStatePagerAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
                 return fragments.get(position);

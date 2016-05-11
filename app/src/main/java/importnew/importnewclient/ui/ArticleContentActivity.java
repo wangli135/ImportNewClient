@@ -60,14 +60,8 @@ public class ArticleContentActivity extends AppCompatActivity {
         mSwipeRefreshLayout.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
         mListView = (ListView) findViewById(R.id.article_content_lv);
 
-        if (mArticle.getBody() != null) {
-            mSwipeRefreshLayout.setEnabled(false);
-            mSwipeRefreshLayout.setRefreshing(false);
-            mAdapter = new ArticleBodyAdapter(this, mArticle.getBody());
-            mListView.setAdapter(mAdapter);
-        } else {
-            new LoadAndParserWorker().execute(mArticle.getUrl());
-        }
+        new LoadAndParserWorker().execute();
+
     }
 
     @Override
@@ -75,10 +69,6 @@ public class ArticleContentActivity extends AppCompatActivity {
         super.onPause();
         if (mAdapter != null)
             mAdapter.flushCache();
-
-        if (mSecondCache != null)
-            mSecondCache.flushCache();
-
     }
 
     @Override
@@ -92,8 +82,8 @@ public class ArticleContentActivity extends AppCompatActivity {
     public void onBackPressed() {
 
         Intent intent = new Intent();
-        intent.putExtra(Constants.Key.IS_FAVOURITE, isFavourite);
-        //intent.putExtra(Constants.Key.ARTICLE_BODY, mArticle.getBody());
+        mArticle.setFavourite(isFavourite);
+        intent.putExtra(Constants.Key.ARTICLE, mArticle);
         setResult(Activity.RESULT_OK, intent);
 
         super.onBackPressed();
@@ -140,7 +130,7 @@ public class ArticleContentActivity extends AppCompatActivity {
     }
 
 
-    class LoadAndParserWorker extends AsyncTask<String, Void, ArticleBody> {
+    class LoadAndParserWorker extends AsyncTask<Void, Void, ArticleBody> {
 
         @Override
         protected void onPreExecute() {
@@ -149,13 +139,21 @@ public class ArticleContentActivity extends AppCompatActivity {
         }
 
         @Override
-        protected ArticleBody doInBackground(String... params) {
+        protected ArticleBody doInBackground(Void... params) {
 
-            String html = mSecondCache.getResponseFromDiskCache(params[0]);
-            if (TextUtils.isEmpty(html))
-                html = mSecondCache.getResponseFromNetwork(params[0]);
+            String html = mArticle.getBodyString();
+
+            if (TextUtils.isEmpty(html)) {
+                html = mSecondCache.getResponseFromDiskCache(mArticle.getUrl());
+                if (TextUtils.isEmpty(html))
+                    html = mSecondCache.getResponseFromNetwork(mArticle.getUrl());
+            }
 
             if (!TextUtils.isEmpty(html)) {
+
+                if (mArticle.getBodyString() == null)
+                    mArticle.setBodyString(html);
+
                 return ArticleBodyParser.parser(html);
             }
 
@@ -168,7 +166,6 @@ public class ArticleContentActivity extends AppCompatActivity {
             super.onPostExecute(articleBody);
             mSwipeRefreshLayout.setRefreshing(false);
             if (articleBody != null) {
-                mArticle.setBody(articleBody);
                 mAdapter = new ArticleBodyAdapter(ArticleContentActivity.this, articleBody);
                 mListView.setAdapter(mAdapter);
                 mSwipeRefreshLayout.setEnabled(false);

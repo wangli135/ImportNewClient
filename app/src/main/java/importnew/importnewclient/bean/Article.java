@@ -1,15 +1,16 @@
 package importnew.importnewclient.bean;
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 文章实体类
  * Created by Xingfeng on 2016/4/30.
  */
-public class Article implements Serializable{
+public class Article implements Parcelable{
 
     /**
      * 文章URL
@@ -32,9 +33,57 @@ public class Article implements Serializable{
     private String desc;
 
     /**
-     * 文章内容
+     * 文章对应html文本
      */
-    private ArticleBody body;
+    private String bodyString;
+
+    protected Article(Parcel in) {
+        url = in.readString();
+        imgUrl = in.readString();
+        title = in.readString();
+        desc = in.readString();
+        bodyString = in.readString();
+        bitmap = in.readParcelable(Bitmap.class.getClassLoader());
+        commentNum = in.readInt();
+        isFavourite = in.readByte() != 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(url);
+        dest.writeString(imgUrl);
+        dest.writeString(title);
+        dest.writeString(desc);
+        dest.writeString(bodyString);
+        dest.writeParcelable(bitmap, flags);
+        dest.writeInt(commentNum);
+        dest.writeByte((byte) (isFavourite ? 1 : 0));
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Article> CREATOR = new Creator<Article>() {
+        @Override
+        public Article createFromParcel(Parcel in) {
+            return new Article(in);
+        }
+
+        @Override
+        public Article[] newArray(int size) {
+            return new Article[size];
+        }
+    };
+
+    public String getBodyString() {
+        return bodyString;
+    }
+
+    public void setBodyString(String bodyString) {
+        this.bodyString = bodyString;
+    }
 
     /**
      * 图片
@@ -61,15 +110,16 @@ public class Article implements Serializable{
     public Article() {
     }
 
-    public Article(String url, String imgUrl, String title, String desc, ArticleBody body, Bitmap bitmap, int commentNum, Date date) {
+    public Article(String url, String imgUrl, String title, String desc, String bodyString, Bitmap bitmap, int commentNum, Date date, boolean isFavourite) {
         this.url = url;
         this.imgUrl = imgUrl;
         this.title = title;
         this.desc = desc;
-        this.body = body;
+        this.bodyString = bodyString;
         this.bitmap = bitmap;
         this.commentNum = commentNum;
         this.date = date;
+        this.isFavourite = isFavourite;
     }
 
     public String getUrl() {
@@ -102,14 +152,6 @@ public class Article implements Serializable{
 
     public void setDesc(String desc) {
         this.desc = desc;
-    }
-
-    public ArticleBody getBody() {
-        return body;
-    }
-
-    public void setBody(ArticleBody body) {
-        this.body = body;
     }
 
     public int getCommentNum() {

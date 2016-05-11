@@ -40,7 +40,7 @@ public class HttpManager {
         if (!cacheFile.exists()) {
             cacheFile.exists();
         }
-        Cache cache = new Cache(cacheFile, 10 * 1024 * 1024);//10M响应缓存
+        Cache cache = new Cache(cacheFile, 20 * 1024 * 1024);//20M响应缓存
         client = builder.cache(cache).build();
     }
 

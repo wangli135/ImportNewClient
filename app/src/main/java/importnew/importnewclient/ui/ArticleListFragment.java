@@ -16,7 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +38,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LoadMoreListView mListView;
 
-    private LinkedList<Article> mArticles;
+    private ArrayList<Article> mArticles;
     private ArticleAdapter mAdapter;
 
     private boolean isLoading;//加载更多的标志
@@ -53,8 +53,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
      */
     private int pageNum = 1;
 
-    public static final String ARTICLE_BASE_URL = "article_base_url";
-
     public ArticleListFragment() {
     }
 
@@ -62,15 +60,16 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            category = (String) savedInstanceState.get(ARTICLE_BASE_URL);
-        }
-        pageNum = 1;
+            category = (String) savedInstanceState.get(Constants.Key.ARTICLE_BASE_URL);
+            mArticles = savedInstanceState.getParcelableArrayList(Constants.Key.ARTICLE_LIST);
+            pageNum = savedInstanceState.getInt(Constants.Key.PAGE_NUM);
+        } else pageNum = 1;
     }
 
     public static ArticleListFragment newInstance(String baseurl) {
         ArticleListFragment fragment = new ArticleListFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(ARTICLE_BASE_URL, baseurl);
+        bundle.putString(Constants.Key.ARTICLE_BASE_URL, baseurl);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -118,9 +117,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         });
 
         mListView = (LoadMoreListView) view.findViewById(R.id.articles_lv);
-        mArticles = new LinkedList<>();
-        mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
-        mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
         mListView.setOnLoadMoreListener(new LoadMoreListView.OnLoadMoreListener() {
             @Override
@@ -133,8 +129,17 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         });
 
         mSecondCache = SecondCache.getInstance(getContext());
+        if (mArticles == null) {
+            mArticles = new ArrayList<>();
+            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
+            mListView.setAdapter(mAdapter);
+            loadArticles();
+        } else {
+            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
+            mListView.setAdapter(mAdapter);
+        }
 
-        loadArticles();
+
     }
 
 
@@ -184,8 +189,17 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mAdapter.cancelAllTasks();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(Constants.Key.ARTICLE_BASE_URL, category);
+        outState.putParcelableArrayList(Constants.Key.ARTICLE_LIST, mArticles);
+        outState.putInt(Constants.Key.PAGE_NUM, pageNum);
+        super.onSaveInstanceState(outState);
+
+    }
+
     private void loadArticles() {
-        category = (String) getArguments().get(ARTICLE_BASE_URL);
+        category = (String) getArguments().get(Constants.Key.ARTICLE_BASE_URL);
         String url = category + (pageNum++);
         new ArticleGetTask().execute(url);
     }

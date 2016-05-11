@@ -4,7 +4,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -12,7 +11,8 @@ import java.util.Iterator;
  * 文章正文部分
  * Created by Xingfeng on 2016/5/5.
  */
-public class ArticleBody implements Iterable<Node>, Serializable {
+public class ArticleBody implements Iterable<Node> {
+
 
     /**
      * 文章标题部分节点

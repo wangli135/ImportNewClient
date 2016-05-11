@@ -26,6 +26,17 @@ public class Constants {
          */
         public static final String IS_FAVOURITE = "is_favourite";
 
+        /**
+         * 文章列表
+         */
+        public static final String ARTICLE_LIST = "article_list";
+
+        /**
+         * 文章页数
+         */
+        public static final String PAGE_NUM = "page_num";
+
+        public static final String ARTICLE_BASE_URL = "article_base_url";
     }
 
     public static class Code {
