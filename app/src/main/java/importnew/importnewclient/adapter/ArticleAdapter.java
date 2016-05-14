@@ -81,6 +81,7 @@ public class ArticleAdapter extends BaseAdapter {
             viewHolder.img.setTag(article.getImgUrl());
             viewHolder.desc = (TextView) convertView.findViewById(R.id.article_desc);
             viewHolder.commentNum = (TextView) convertView.findViewById(R.id.article_comment_num);
+            viewHolder.date = (TextView) convertView.findViewById(R.id.article_date);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -89,7 +90,8 @@ public class ArticleAdapter extends BaseAdapter {
         viewHolder.title.setText(article.getTitle());
         viewHolder.desc.setText(article.getDesc());
         viewHolder.img.setImageResource(R.drawable.emptyview);
-        viewHolder.commentNum.setText(article.getCommentNum() + "条评论");
+        viewHolder.commentNum.setText(article.getCommentNum());
+        viewHolder.date.setText(article.getDate());
 
         loadBitmaps(article.getImgUrl(), viewHolder.img);
         return convertView;
@@ -163,6 +165,7 @@ public class ArticleAdapter extends BaseAdapter {
         ImageView img;
         TextView desc;
         TextView commentNum;
+        TextView date;
     }
 
 

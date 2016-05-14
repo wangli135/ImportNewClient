@@ -1,18 +1,12 @@
 package importnew.importnewclient.parser;
 
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.pages.Nodes;
 
 /**
  * 解析资讯、Web、架构、基础技术、书籍、教程
@@ -22,67 +16,106 @@ public class ArticlesParser {
 
     public static List<Article> parserArtciles(String html) {
 
-        List<Article> lists = new ArrayList<>();
-        Article article = null;
+        long current = System.currentTimeMillis();
+
+        List<Article> articles = new ArrayList<>();
 
         try {
-            Element grid_8 = Jsoup.parse(html).body().getElementById(Nodes.Id.WRAPPER).getElementsByClass(Nodes.Class.GRID_8).first();
 
-            Elements post_floated_thumb = grid_8.getElementsByTag(Nodes.Tag.DIV);
+            Pattern pattern = Pattern.compile("(<!-- BEGIN .post -->).*((<!-- END .post -->))+?", Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(html);
+            while (matcher.find()) {
 
-            for (Element floated_thumb : post_floated_thumb) {
+                String temp = html.substring(matcher.start(), matcher.end());
+                Article article = null;
+                String[] arrays = temp.split("<!-- END .post -->");
+                for (int i = 0; i < arrays.length; i++) {
 
-                if (floated_thumb.className().equals(Nodes.Class.POST_FLOATED_THUMB)) {
+                    article = new Article();
 
-                    article = parserArticle(floated_thumb);
-                    lists.add(article);
+                    temp = arrays[i];
+                    pattern = Pattern.compile("<a.*<img.*></a>");
+                    matcher = pattern.matcher(temp);
+                    while (matcher.find()) {
 
-                } else if (floated_thumb.className().equals(Nodes.Class.NAVIGATION)) {
-                    break;
-                }
+                        //文章日期、评论、简介
+                        String left = temp.substring(matcher.end() - 1);
+                        //文章标题、链接、图片链接
+                        temp = temp.substring(matcher.start(), matcher.end());
 
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return lists;
-        }
-        return lists;
-    }
+                        //文章链接
+                        pattern = Pattern.compile("href.*\\.html\"");
+                        matcher = pattern.matcher(temp);
+                        while (matcher.find()) {
 
-    private static Article parserArticle(Element floated_thumb) {
+                            article.setUrl(temp.substring(matcher.start() + 6, matcher.end() - 1));
 
-        Article article = new Article();
+                        }
 
-        for (Node childNode : floated_thumb.childNodes()) {
-            if (childNode instanceof Element) {
-                Element element = (Element) childNode;
+                        //文章标题
+                        pattern = Pattern.compile("title=\".*\">");
+                        matcher = pattern.matcher(temp);
+                        while (matcher.find()) {
+                            article.setTitle(temp.substring(matcher.start() + 7, matcher.end() - 2));
+                        }
 
-                if (element.className().equals(Nodes.Class.ARTICLE_PIC)) {
-                    Element img = element.getElementsByTag(Nodes.Tag.A).first().getElementsByTag(Nodes.Tag.IMG).first();
-                    article.setImgUrl(img.attr(Nodes.Attribute.SRC));
-                } else if (element.className().equals(Nodes.Class.ARTICLE_METADATA)) {
-                    Element p = element.getElementsByTag(Nodes.Tag.P).first();
-                    Element title = p.getElementsByTag(Nodes.Tag.A).first();
-                    article.setUrl(title.attr(Nodes.Attribute.HREF));
-                    article.setTitle(title.attr(Nodes.Attribute.TITLE));
+                        //文章图片链接
+                        pattern = Pattern.compile("src.*\\.((jpg)|(png)|(gif))\"");
+                        matcher = pattern.matcher(temp);
+                        while (matcher.find()) {
+                            article.setImgUrl(temp.substring(matcher.start() + 5, matcher.end() - 1));
+                        }
 
-                    String text = p.text();
-                    String right = text.substring(article.getTitle().length());
-                    String[] array = right.split("\\|");
-                    try {
-                        article.setDate(new SimpleDateFormat("yyyy/MM/dd").parse(array[0].trim()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                        //文章日期、评论部分
+                        pattern = Pattern.compile("<p><a.*</p>");
+                        matcher = pattern.matcher(left);
+                        while (matcher.find()) {
+                            temp = left.substring(matcher.start(), matcher.end());
+                            left = left.substring(matcher.end() - 1);
+                        }
+
+                        //文章日期
+                        pattern = Pattern.compile("\\d{4}/\\d{2}/\\d{2}");
+                        matcher = pattern.matcher(temp);
+                        while (matcher.find()) {
+                            article.setDate(temp.substring(matcher.start(), matcher.end()));
+                        }
+
+                        //评论数目
+                        pattern = Pattern.compile("\\d+ 条评论");
+                        matcher = pattern.matcher(temp);
+                        while (matcher.find()) {
+                            article.setCommentNum(temp.substring(matcher.start(), matcher.end()));
+                        }
+
+                        //文章简述
+                        pattern = Pattern.compile("<p>[^<].+</p>");
+                        matcher = pattern.matcher(left);
+                        while (matcher.find()) {
+                            temp = left.substring(matcher.start() + 3, matcher.end() - 4);
+                            temp = temp.replaceAll("<span.*\">", "");
+                            temp = temp.replaceAll("</a></span>", "");
+                            article.setDesc(temp);
+                        }
+                        articles.add(article);
+                        article = null;
+
                     }
 
 
-                    Element span = floated_thumb.getElementsByClass(Nodes.Class.ARTICLE_METADATA).first().getElementsByTag(Nodes.Tag.SPAN).first();
-                    article.setDesc(span.getElementsByTag(Nodes.Tag.P).first().text());
                 }
+
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return articles;
         }
 
-        return article;
+        System.out.println("Regex: " + (System.currentTimeMillis() - current));
+
+        return articles;
     }
+
 
 }

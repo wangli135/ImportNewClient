@@ -4,13 +4,11 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Date;
-
 /**
  * 文章实体类
  * Created by Xingfeng on 2016/4/30.
  */
-public class Article implements Parcelable{
+public class Article implements Parcelable {
 
     /**
      * 文章URL
@@ -37,6 +35,7 @@ public class Article implements Parcelable{
      */
     private String bodyString;
 
+
     protected Article(Parcel in) {
         url = in.readString();
         imgUrl = in.readString();
@@ -44,7 +43,8 @@ public class Article implements Parcelable{
         desc = in.readString();
         bodyString = in.readString();
         bitmap = in.readParcelable(Bitmap.class.getClassLoader());
-        commentNum = in.readInt();
+        commentNum = in.readString();
+        date = in.readString();
         isFavourite = in.readByte() != 0;
     }
 
@@ -56,7 +56,8 @@ public class Article implements Parcelable{
         dest.writeString(desc);
         dest.writeString(bodyString);
         dest.writeParcelable(bitmap, flags);
-        dest.writeInt(commentNum);
+        dest.writeString(commentNum);
+        dest.writeString(date);
         dest.writeByte((byte) (isFavourite ? 1 : 0));
     }
 
@@ -93,12 +94,12 @@ public class Article implements Parcelable{
     /**
      * 评论数目
      */
-    private int commentNum;
+    private String commentNum;
 
     /**
      * 文章日期
      */
-    private Date date;
+    private String date;
 
     /**
      * 是否是收藏的文章
@@ -106,11 +107,10 @@ public class Article implements Parcelable{
     private boolean isFavourite;
 
 
-
     public Article() {
     }
 
-    public Article(String url, String imgUrl, String title, String desc, String bodyString, Bitmap bitmap, int commentNum, Date date, boolean isFavourite) {
+    public Article(String url, String imgUrl, String title, String desc, String bodyString, Bitmap bitmap, String commentNum, String date, boolean isFavourite) {
         this.url = url;
         this.imgUrl = imgUrl;
         this.title = title;
@@ -154,19 +154,20 @@ public class Article implements Parcelable{
         this.desc = desc;
     }
 
-    public int getCommentNum() {
+    public String getCommentNum() {
         return commentNum;
     }
 
-    public void setCommentNum(int commentNum) {
+    public void setCommentNum(String commentNum) {
         this.commentNum = commentNum;
     }
 
-    public Date getDate() {
+
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -189,6 +190,7 @@ public class Article implements Parcelable{
 
     /**
      * 两篇文章的URL相同，则认为文章相等
+     *
      * @param o
      * @return
      */
@@ -201,6 +203,22 @@ public class Article implements Parcelable{
 
         return url.equals(article.url);
 
+    }
+
+
+    @Override
+    public String toString() {
+        return "Article{" +
+                "url='" + url + '\'' +
+                ", imgUrl='" + imgUrl + '\'' +
+                ", title='" + title + '\'' +
+                ", desc='" + desc + '\'' +
+                ", bodyString='" + bodyString + '\'' +
+                ", bitmap=" + bitmap +
+                ", commentNum=" + commentNum +
+                ", date='" + date + '\'' +
+                ", isFavourite=" + isFavourite +
+                '}';
     }
 
     @Override

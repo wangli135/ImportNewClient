@@ -1,5 +1,6 @@
 package importnew.importnewclient.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,6 +8,7 @@ import java.util.List;
  * Created by Xingfeng on 2016/4/30.
  */
 public class ArticleBlock {
+
 
     /**
      * 文章分类
@@ -20,6 +22,7 @@ public class ArticleBlock {
 
 
     public ArticleBlock() {
+        articles = new ArrayList<>();
     }
 
     public ArticleBlock(String category, List<Article> articles) {
@@ -33,6 +36,10 @@ public class ArticleBlock {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public void addArticle(Article article) {
+        articles.add(article);
     }
 
     public List<Article> getArticles() {

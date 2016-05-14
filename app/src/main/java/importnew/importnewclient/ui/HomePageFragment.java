@@ -26,6 +26,7 @@ import importnew.importnewclient.net.ConnectionManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
+import importnew.importnewclient.utils.ArctileBlockConverter;
 
 
 /**
@@ -136,10 +137,11 @@ public class HomePageFragment extends BaseFragment {
             @Override
             public void onRefresh(String html) {
 
-                if(!TextUtils.isEmpty(html)) {
-                    List<ArticleBlock> blocks = HomePagerParser.paserHomePage(html);
+                if (!TextUtils.isEmpty(html)) {
+
                     articles.clear();
-                    articles.addAll(blocks);
+                    articles.addAll(ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html)));
+                    mAdapter.notifyDataSetChanged();
                 }
 
                 getActivity().runOnUiThread(new Runnable() {
@@ -171,9 +173,9 @@ public class HomePageFragment extends BaseFragment {
             if (TextUtils.isEmpty(html))
                 html = mSecondCache.getResponseFromNetwork(url);
 
-            if (!TextUtils.isEmpty(html))
-                return HomePagerParser.paserHomePage(html);
-            else
+            if (!TextUtils.isEmpty(html)) {
+                return ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html));
+            } else
                 return null;
 
 

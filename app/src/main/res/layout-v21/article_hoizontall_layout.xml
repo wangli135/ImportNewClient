@@ -48,5 +48,16 @@
         android:layout_width="wrap_content"
         android:layout_height="16dp" />
 
+    <TextView
+        android:layout_marginRight="8dp"
+        android:id="@+id/article_date"
+        android:layout_width="wrap_content"
+        android:layout_height="16dp"
+        android:layout_below="@id/article_desc"
+        android:layout_marginTop="3dp"
+        android:layout_toLeftOf="@id/article_comment_num"
+        android:gravity="center_vertical"
+        android:text="2016/15/23"
+        android:textSize="10sp" />
 
 </RelativeLayout>
