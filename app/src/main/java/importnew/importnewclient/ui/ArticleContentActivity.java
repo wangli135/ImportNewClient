@@ -2,21 +2,24 @@ package importnew.importnewclient.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
+import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.net.URI;
+
 import importnew.importnewclient.R;
-import importnew.importnewclient.adapter.ArticleBodyAdapter;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.bean.ArticleBody;
 import importnew.importnewclient.parser.ArticleBodyParser;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
@@ -28,11 +31,12 @@ public class ArticleContentActivity extends AppCompatActivity {
 
     private Article mArticle;
 
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private ListView mListView;
-    private ArticleBodyAdapter mAdapter;
+    private ProgressBar mProgressBar;
+    private WebView mWebView;
 
     private SecondCache mSecondCache;
+
+    private LoadAndParserWorker worker;
 
     /**
      * 是否收藏
@@ -43,7 +47,7 @@ public class ArticleContentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_content);
-        mArticle = (Article) getIntent().getSerializableExtra(Constants.Key.ARTICLE);
+        mArticle = (Article) getIntent().getParcelableExtra(Constants.Key.ARTICLE);
         isFavourite = mArticle.isFavourite();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -55,38 +59,44 @@ public class ArticleContentActivity extends AppCompatActivity {
 
     private void initViews() {
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.article_swiperefresh);
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
-        mSwipeRefreshLayout.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
-        mListView = (ListView) findViewById(R.id.article_content_lv);
+        mProgressBar = (ProgressBar) findViewById(R.id.article_progressbar);
+        mWebView = (WebView) findViewById(R.id.article_webview);
+        mWebView.setHorizontalScrollBarEnabled(false);
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
-        new LoadAndParserWorker().execute();
+                if (URI.create(url).getHost().equals("www.importnew.com") || (url.matches(".+\\.((jpg)|(png)|(gif))")))
+                    return false;
 
-    }
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
+            }
+        });
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mAdapter != null)
-            mAdapter.flushCache();
+        worker = new LoadAndParserWorker();
+        worker.execute();
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mAdapter != null)
-            mAdapter.cancelAllTasks();
+        if (worker != null) {
+            worker.cancel(true);
+        }
     }
 
     @Override
-    public void onBackPressed() {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-        Intent intent = new Intent();
-        mArticle.setFavourite(isFavourite);
-        intent.putExtra(Constants.Key.ARTICLE, mArticle);
-        setResult(Activity.RESULT_OK, intent);
+        if (keyCode == KeyEvent.KEYCODE_BACK && mWebView.canGoBack()) {
+            mWebView.goBack();
+            return true;
+        }
 
-        super.onBackPressed();
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -122,7 +132,11 @@ public class ArticleContentActivity extends AppCompatActivity {
                 break;
 
             case android.R.id.home:
-                onBackPressed();
+                Intent intent = new Intent();
+                mArticle.setFavourite(isFavourite);
+                intent.putExtra(Constants.Key.ARTICLE, mArticle);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
         }
 
@@ -130,16 +144,16 @@ public class ArticleContentActivity extends AppCompatActivity {
     }
 
 
-    class LoadAndParserWorker extends AsyncTask<Void, Void, ArticleBody> {
+    class LoadAndParserWorker extends AsyncTask<Void, Void, String> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mSwipeRefreshLayout.setRefreshing(true);
+            mWebView.setVisibility(View.GONE);
         }
 
         @Override
-        protected ArticleBody doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
 
             String html = mArticle.getBodyString();
 
@@ -151,10 +165,9 @@ public class ArticleContentActivity extends AppCompatActivity {
 
             if (!TextUtils.isEmpty(html)) {
 
-                if (mArticle.getBodyString() == null)
-                    mArticle.setBodyString(html);
-
-                return ArticleBodyParser.parser(html);
+                html = ArticleBodyParser.parserArticleBody(html);
+                mArticle.setBodyString(html);
+                return html;
             }
 
             return null;
@@ -162,16 +175,13 @@ public class ArticleContentActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArticleBody articleBody) {
-            super.onPostExecute(articleBody);
-            mSwipeRefreshLayout.setRefreshing(false);
-            if (articleBody != null) {
-                mAdapter = new ArticleBodyAdapter(ArticleContentActivity.this, articleBody);
-                mListView.setAdapter(mAdapter);
-                mSwipeRefreshLayout.setEnabled(false);
-            } else {
-                mListView.setEmptyView(null);
+        protected void onPostExecute(String html) {
+            super.onPostExecute(html);
+            if (!TextUtils.isEmpty(html)) {
+                mWebView.setVisibility(View.VISIBLE);
+                mWebView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
             }
+            mProgressBar.setVisibility(View.GONE);
         }
     }
 }

@@ -1,10 +1,7 @@
 package importnew.importnewclient.parser;
 
 import java.io.IOException;
-import java.util.List;
 
-import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.net.URLManager;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,15 +15,14 @@ public class Test {
 
         try {
             OkHttpClient httpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(URLManager.BASIC + 5).build();
+            Request request = new Request.Builder().url("http://www.importnew.com/18308.html").build();
             Response response = httpClient.newCall(request).execute();
             String html = response.body().string();
 
             if (html != null && !html.equals("")) {
 
-                List<Article> list = ArticlesParser.parserArtciles(html);
-                for (Article article : list)
-                    System.out.println(article);
+                System.out.println(ArticleBodyParser.parserArticleBody(html));
+
             }
 
         } catch (IOException e) {
