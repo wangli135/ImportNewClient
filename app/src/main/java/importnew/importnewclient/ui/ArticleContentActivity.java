@@ -16,8 +16,6 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import java.net.URI;
-
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
@@ -64,9 +62,6 @@ public class ArticleContentActivity extends AppCompatActivity {
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
-                if (URI.create(url).getHost().equals("www.importnew.com") || (url.matches(".+\\.((jpg)|(png)|(gif))")))
-                    return false;
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
