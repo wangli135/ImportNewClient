@@ -80,7 +80,7 @@ public class ArticleBodyParser {
         pattern = Pattern.compile("<!-- BEGIN header -->.+<!-- END header -->", Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
-            sb.append(left.substring(0, matcher.start()));
+            sb.append(left.substring(0, matcher.start())).append("<br>");
             left = left.substring(matcher.end());
         }
 
