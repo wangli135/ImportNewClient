@@ -22,8 +22,6 @@ public class HomePagerParser {
      */
     public static List<Article> parserHomePage(String html) {
 
-        long current = System.currentTimeMillis();
-
         List<Article> articleList = new ArrayList<>();
         Article article = null;
 
@@ -67,8 +65,6 @@ public class HomePagerParser {
             return articleList;
         }
 
-
-        System.out.println("Regex: " + (System.currentTimeMillis() - current));
 
         return articleList;
 

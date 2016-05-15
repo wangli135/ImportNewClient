@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import importnew.importnewclient.adapter.ArticleAdapter;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.ArticlesParser;
+import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
 import importnew.importnewclient.view.LoadMoreListView;
 
@@ -84,6 +87,17 @@ public class SearchResultActivity extends AppCompatActivity {
         mArticles = new ArrayList<>();
         mAdapter = new ArticleAdapter(this, mArticles);
         mLoadMoreLv.setAdapter(mAdapter);
+        mLoadMoreLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Article article = mArticles.get(position);
+                Intent intent = new Intent(SearchResultActivity.this, ArticleContentActivity.class);
+                intent.putExtra(Constants.Key.ARTICLE, article);
+                startActivity(intent);
+
+            }
+        });
 
 
     }

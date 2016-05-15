@@ -14,17 +14,8 @@
       <entry name="!?*.aj" />
     </wildcardResourcePatterns>
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="E:/imooc_study_workspqce/Android_Space/ImoocStudy1/annotationsdemo/complie-libs/androidannotations-3.2.jar" />
-        </processorPath>
-      </profile>
-      <profile default="false" name="annotationdemo" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="E:/imooc_study_workspqce/Android_Space/ImoocStudy1/annotationsdemo/complie-libs/androidannotations-3.2.jar" />
-        </processorPath>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
       </profile>
     </annotationProcessing>
   </component>

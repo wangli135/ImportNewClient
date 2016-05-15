@@ -16,8 +16,6 @@ public class ArticlesParser {
 
     public static List<Article> parserArtciles(String html) {
 
-        long current = System.currentTimeMillis();
-
         List<Article> articles = new ArrayList<>();
 
         try {
@@ -111,8 +109,6 @@ public class ArticlesParser {
             e.printStackTrace();
             return articles;
         }
-
-        System.out.println("Regex: " + (System.currentTimeMillis() - current));
 
         return articles;
     }
