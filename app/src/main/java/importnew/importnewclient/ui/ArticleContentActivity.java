@@ -20,7 +20,6 @@ import java.net.URI;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.parser.ArticleBodyParser;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
 
@@ -164,8 +163,6 @@ public class ArticleContentActivity extends AppCompatActivity {
             }
 
             if (!TextUtils.isEmpty(html)) {
-
-                html = ArticleBodyParser.parserArticleBody(html);
                 mArticle.setBodyString(html);
                 return html;
             }

@@ -2,6 +2,7 @@ package importnew.importnewclient.parser;
 
 import java.io.IOException;
 
+import importnew.importnewclient.net.ArticleBodyInterceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -14,16 +15,17 @@ public class Test {
     public static void main(String[] args) {
 
         try {
-            OkHttpClient httpClient = new OkHttpClient();
-            Request request = new Request.Builder().url("http://www.importnew.com/18308.html").build();
-            Response response = httpClient.newCall(request).execute();
-            String html = response.body().string();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(new ArticleBodyInterceptor())
+                    .build();
 
-            if (html != null && !html.equals("")) {
+            Request request = new Request.Builder()
+                    .url("http://www.importnew.com/18308.html")
+                    .build();
 
-                System.out.println(ArticleBodyParser.parserArticleBody(html));
-
-            }
+            Response response = client.newCall(request).execute();
+            System.out.println(response.body().string());
+            response.body().close();
 
         } catch (IOException e) {
             e.printStackTrace();

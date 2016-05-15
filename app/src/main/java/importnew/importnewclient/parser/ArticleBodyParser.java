@@ -69,7 +69,7 @@ public class ArticleBodyParser {
         //提取header部分
         Pattern pattern = Pattern.compile("<!DOCTYPE.+</head>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(html);
-        String left = null;
+        String left = "";
         while (matcher.find()) {
            // System.out.println(html.substring(matcher.start(), matcher.end()));
             sb.append(html.substring(0, matcher.end()));

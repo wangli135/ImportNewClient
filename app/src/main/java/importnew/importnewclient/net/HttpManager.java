@@ -35,7 +35,7 @@ public class HttpManager {
 
     private HttpManager(Context context) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS).retryOnConnectionFailure(true);
+                .readTimeout(10, TimeUnit.SECONDS).addInterceptor(new ArticleBodyInterceptor()).retryOnConnectionFailure(true);
         File cacheFile = getDiskCacheDir(context, "response");
         if (!cacheFile.exists()) {
             cacheFile.exists();
