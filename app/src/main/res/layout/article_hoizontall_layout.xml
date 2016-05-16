@@ -18,6 +18,7 @@
         android:textSize="13sp" />
 
     <ImageView
+        android:src="@drawable/emptyview"
         android:id="@+id/article_img"
         android:layout_width="48dp"
         android:layout_height="48dp"

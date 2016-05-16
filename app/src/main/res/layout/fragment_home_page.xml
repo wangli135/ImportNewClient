@@ -1,15 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/homepage_swiperefresh"
-    android:background="#F0F0F0"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#EBEBEB"
+    >
 
-    <android.support.v7.widget.RecyclerView
-        android:background="#E0E0E0"
-        android:dividerHeight="3dp"
-        android:id="@+id/homepage_recycler"
+    <ListView
+        android:layout_margin="7dp"
+        android:id="@+id/article_block_listview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent"></ListView>
 
 </android.support.v4.widget.SwipeRefreshLayout>
 

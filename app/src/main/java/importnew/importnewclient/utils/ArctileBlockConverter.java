@@ -21,7 +21,7 @@ public class ArctileBlockConverter {
         for (int i = 0; i < articleList.size(); i++) {
             if (i % 5 == 0) {
                 articleBlock = new ArticleBlock();
-                articleBlock.setCategory(titles[i%5]);
+                articleBlock.setCategory(titles[i/5]);
                 articleBlockList.add(articleBlock);
             }
 

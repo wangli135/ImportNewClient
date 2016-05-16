@@ -122,7 +122,14 @@ public class ArticleContentActivity extends AppCompatActivity {
 
             }
             break;
-            case R.id.menu_share:
+            case R.id.action_share:{
+                Intent share = new Intent(Intent.ACTION_SEND);
+                share.setType("text/plain");
+                share.putExtra(Intent.EXTRA_TITLE, mArticle.getTitle());
+                share.putExtra(Intent.EXTRA_TEXT, mArticle.getDesc());
+                share.putExtra(Intent.EXTRA_HTML_TEXT, mArticle.getUrl());
+                startActivity(Intent.createChooser(share,"Share"));
+            }
                 break;
 
             case android.R.id.home:

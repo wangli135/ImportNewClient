@@ -1,13 +1,17 @@
 package importnew.importnewclient.adapter;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.HashSet;
@@ -21,149 +25,128 @@ import importnew.importnewclient.ui.ArticleContentActivity;
 import importnew.importnewclient.ui.BaseFragment;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.ThridCache;
-import importnew.importnewclient.view.VerticalArticleView;
 
 /**
- * Created by Xingfeng on 2016/4/30.
+ * Created by Xingfeng on 2016/5/16.
  */
-public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapter.ArticleBlockVH> {
+public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
+
+    private LayoutInflater mInfalter;
+
+    private ArticleBlock mArticleBlock;
+    private List<Article> articleList;
+
+    private ListView mListView;
 
     /**
      * 记录所有正在下载或等待下载的任务
      */
     private Set<BitmapWorkerTask> taskCollection;
 
-
     private ThridCache mThridCache;
 
-    /**
-     * RecycleView实例
-     */
-    private RecyclerView mRecycleView;
+    private Context mContext;
 
-    private List<ArticleBlock> datas;
+    public ArticleBlockAdapter(Context context, ListView listView, ArticleBlock articleBlock) {
+        mContext = context;
+        mInfalter = LayoutInflater.from(context);
+        mListView = listView;
+        mArticleBlock = articleBlock;
+        articleList = mArticleBlock.getArticles();
 
-    private Activity activity;
-    /**
-     * 选择的文章
-     */
-    private Article selectedArticle;
-
-    public ArticleBlockAdapter(Activity activity, RecyclerView recyclerView, List<ArticleBlock> datas) {
-        this.datas = datas;
-        this.mRecycleView = recyclerView;
         taskCollection = new HashSet<>();
-
-        this.activity = activity;
-        mThridCache = ThridCache.getInstance(activity);
-
+        mThridCache = ThridCache.getInstance(context);
+        listView.setOnItemClickListener(this);
     }
 
     @Override
-    public ArticleBlockVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.articles_block_layout, parent, false);
-        return new ArticleBlockVH(view);
+    public int getCount() {
+        return articleList.size();
     }
 
     @Override
-    public void onBindViewHolder(ArticleBlockVH holder, int position) {
-
-        ArticleBlock articleBlock = datas.get(position);
-        holder.category.setText(articleBlock.getCategory());
-        List<Article> articles = articleBlock.getArticles();
-        Article article = null;
-        VerticalArticleView verticalArticleView = null;
-        for (int i = 0; i < articles.size(); i++) {
-
-            verticalArticleView = holder.views[i];
-            article = articles.get(i);
-            verticalArticleView.setArticle(article);
-            verticalArticleView.setText(article.getTitle());
-            verticalArticleView.setTag(article.getImgUrl());
-            verticalArticleView.setImageResource(R.drawable.emptyview);
-            loadBitmaps(verticalArticleView, article.getImgUrl());
-
-            verticalArticleView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectedArticle = ((VerticalArticleView) v).getArticle();
-                    if (activity instanceof BaseFragment.OnArticleSelectedListener) {
-                        ((BaseFragment.OnArticleSelectedListener) activity).onArticleSelectedListener(selectedArticle);
-                    }
-
-                    Intent intent = new Intent(activity, ArticleContentActivity.class);
-                    intent.putExtra(Constants.Key.ARTICLE, selectedArticle);
-                    activity.startActivityForResult(intent, Constants.Code.REQUEST_CODE);
-
-                }
-            });
-        }
-
+    public Object getItem(int position) {
+        return articleList.get(position);
     }
 
     @Override
-    public int getItemCount() {
-        return datas.size();
+    public long getItemId(int position) {
+        return position;
     }
 
-    /**
-     * 将缓存记录同步到journal文件中
-     */
-    public void flushCache() {
-        if (mThridCache != null) {
-            mThridCache.flushCache();
+    @Override
+    public int getItemViewType(int position) {
+        return (position % 5 == 0) ? 0 : 1;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        Article article = articleList.get(position);
+        View view = null;
+
+        if (getItemViewType(position) == 0) {
+            view = mInfalter.inflate(R.layout.first_article_layout, parent, false);
+            TextView category = (TextView) view.findViewById(R.id.articles_category);
+            category.setText(mArticleBlock.getCategory());
+        } else {
+            view = mInfalter.inflate(R.layout.nonfirst_article_layout, parent, false);
         }
+
+        TextView title = (TextView) view.findViewById(R.id.article_title);
+        title.setText(article.getTitle());
+        ImageView img = (ImageView) view.findViewById(R.id.article_img);
+        loadBitmaps(img, article.getImgUrl());
+
+        return view;
     }
 
-    public static class ArticleBlockVH extends RecyclerView.ViewHolder {
-
-        TextView category;
-        VerticalArticleView[] views;
-
-
-        public ArticleBlockVH(final View itemView) {
-            super(itemView);
-            category = (TextView) itemView.findViewById(R.id.articles_category);
-            views = new VerticalArticleView[5];
-            views[0] = (VerticalArticleView) itemView.findViewById(R.id.first_article);
-            views[1] = (VerticalArticleView) itemView.findViewById(R.id.second_article);
-            views[2] = (VerticalArticleView) itemView.findViewById(R.id.third_article);
-            views[3] = (VerticalArticleView) itemView.findViewById(R.id.fourth_article);
-            views[4] = (VerticalArticleView) itemView.findViewById(R.id.fifth_article);
-        }
-    }
-
-    public void loadBitmaps(VerticalArticleView articleView, String imageUrl) {
+    public void loadBitmaps(ImageView articleImgView, String imageUrl) {
 
         try {
 
             Bitmap bitmap = mThridCache.getBitmapFromMemory(imageUrl);
             if (bitmap == null) {
-                BitmapWorkerTask task = new BitmapWorkerTask();
+                BitmapWorkerTask task = new BitmapWorkerTask(articleImgView);
                 taskCollection.add(task);
                 task.execute(imageUrl);
-            } else if (articleView != null && bitmap != null) {
-                articleView.setImageBitmap(bitmap);
+            } else if (articleImgView != null && bitmap != null) {
+                articleImgView.setImageBitmap(bitmap);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
     }
 
-    /**
-     * 取消所有正在下载或等待下载的任务
-     */
-    public void cancelAllTasks() {
-        if (taskCollection != null) {
-            for (BitmapWorkerTask task : taskCollection) {
-                task.cancel(true);
-            }
-        }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        Article article = articleList.get(position);
+        Intent intent = new Intent(mContext, ArticleContentActivity.class);
+        intent.putExtra(Constants.Key.ARTICLE, article);
+
+        Activity activity = (Activity) mContext;
+
+        if (activity instanceof BaseFragment.OnArticleSelectedListener)
+            ((BaseFragment.OnArticleSelectedListener) activity).onArticleSelectedListener(article);
+
+        activity.startActivityForResult(intent, Constants.Code.REQUEST_CODE);
+
     }
 
     class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
+
+        private ImageView mImageView;
+
+        public BitmapWorkerTask(ImageView mImageView) {
+            this.mImageView = mImageView;
+        }
 
         /**
          * 图片的URL地址
@@ -185,12 +168,33 @@ public class ArticleBlockAdapter extends RecyclerView.Adapter<ArticleBlockAdapte
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
 
-            VerticalArticleView view = (VerticalArticleView) mRecycleView.findViewWithTag(imageUrl);
-            if (view != null && bitmap != null) {
-                view.setImageBitmap(bitmap);
+            if (mImageView != null && bitmap != null) {
+                mImageView.setImageBitmap(bitmap);
             }
             taskCollection.remove(this);
 
         }
     }
+
+    /**
+     * 将缓存记录同步到journal文件中
+     */
+    public void flushCache() {
+        if (mThridCache != null) {
+            mThridCache.flushCache();
+        }
+    }
+
+    /**
+     * 取消所有正在下载或等待下载的任务
+     */
+    public void cancelAllTasks() {
+        if (taskCollection != null) {
+            for (BitmapWorkerTask task : taskCollection) {
+                task.cancel(true);
+            }
+        }
+    }
+
+
 }

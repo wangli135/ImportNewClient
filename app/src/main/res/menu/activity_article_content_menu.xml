@@ -9,8 +9,8 @@
         app:showAsAction="collapseActionView|ifRoom"></item>
 
     <item
-        android:id="@+id/menu_share"
-        android:icon="@drawable/ic_menu_share_white"
+        android:id="@+id/action_share"
         android:title="@string/share"
-        app:showAsAction="collapseActionView|ifRoom"></item>
+        android:icon="@drawable/ic_menu_share_white"
+        app:showAsAction="always" />
 </menu>

@@ -19,6 +19,7 @@
         android:layout_height="30dp" />
 
     <ImageView
+        android:src="@drawable/emptyview"
         android:layout_below="@id/article_title"
         android:id="@id/article_img"
         android:layout_width="48dp"

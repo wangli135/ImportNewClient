@@ -6,13 +6,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
-import importnew.importnewclient.adapter.ArticleBlockAdapter;
+import importnew.importnewclient.adapter.HomePageAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.net.ConnectionManager;
 import importnew.importnewclient.net.RefreshWorker;
@@ -35,13 +34,14 @@ import importnew.importnewclient.utils.ArctileBlockConverter;
  */
 public class HomePageFragment extends BaseFragment {
 
-    private RecyclerView mRecyclerView;
+
     private SwipeRefreshLayout mRefreshLayout;
 
     private List<ArticleBlock> articles;
-    private ArticleBlockAdapter mAdapter;
 
     private ArticleBlockWorker articleBlockWorker;
+    private ListView mArticleBlokcListView;
+    private HomePageAdapter mHomePageAdapter;
 
 
     public HomePageFragment() {
@@ -89,12 +89,11 @@ public class HomePageFragment extends BaseFragment {
             }
         });
 
-
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.homepage_recycler);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mArticleBlokcListView = (ListView) view.findViewById(R.id.article_block_listview);
         articles = new ArrayList<>();
-        mAdapter = new ArticleBlockAdapter(getActivity(), mRecyclerView, articles);
-        mRecyclerView.setAdapter(mAdapter);
+        mHomePageAdapter = new HomePageAdapter(getActivity(), articles);
+        mArticleBlokcListView.setAdapter(mHomePageAdapter);
+
         getHtmlAndParser();
 
 
@@ -107,8 +106,9 @@ public class HomePageFragment extends BaseFragment {
 
         mRefreshLayout.setRefreshing(false);
 
-        if (mAdapter != null)
-            mAdapter.flushCache();
+        if (mHomePageAdapter != null) {
+            mHomePageAdapter.flushCache();
+        }
 
 
     }
@@ -119,8 +119,9 @@ public class HomePageFragment extends BaseFragment {
 
         mRefreshLayout.setRefreshing(false);
 
-        if (mAdapter != null)
-            mAdapter.cancelAllTasks();
+        if (mHomePageAdapter != null) {
+            mHomePageAdapter.cancelAllTasks();
+        }
 
         if (articleBlockWorker != null) {
             articleBlockWorker.cancel(true);
@@ -141,13 +142,12 @@ public class HomePageFragment extends BaseFragment {
 
                     articles.clear();
                     articles.addAll(ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html)));
-                    mAdapter.notifyDataSetChanged();
                 }
 
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mAdapter.notifyDataSetChanged();
+                        mHomePageAdapter.notifyDataSetChanged();
                         mRefreshLayout.setRefreshing(false);
                     }
                 });
@@ -178,7 +178,6 @@ public class HomePageFragment extends BaseFragment {
             } else
                 return null;
 
-
         }
 
         @Override
@@ -191,9 +190,8 @@ public class HomePageFragment extends BaseFragment {
 
                 articles.clear();
                 articles.addAll(articleBlocks);
-                mAdapter.notifyDataSetChanged();
+                mHomePageAdapter.notifyDataSetChanged();
             }
-
         }
     }
 
