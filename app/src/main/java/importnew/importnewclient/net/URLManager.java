@@ -39,4 +39,24 @@ public class URLManager {
      * 教程
      */
     public static final String TUTORIAL="http://www.importnew.com/cat/tutorial/page/";
+
+    /**
+     * 更多频道之Android
+     */
+    public static final String MORE_ANDROID="http://android.jobbole.com/all-posts/page/";
+
+    /**
+     * 更多频道之iOS
+     */
+    public static final String MORE_IOS="http://ios.jobbole.com/all-posts/page/";
+
+    /**
+     * 更多频道之Web
+     */
+    public static final String MORE_WEB="http://web.jobbole.com/all-posts/page/";
+
+    /**
+     * 更多频道之Python
+     */
+    public static final String MORE_PYTHON="http://python.jobbole.com/all-posts/page/";
 }

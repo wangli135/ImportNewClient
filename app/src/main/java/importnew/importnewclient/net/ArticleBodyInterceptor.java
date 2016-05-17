@@ -2,6 +2,8 @@ package importnew.importnewclient.net;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import importnew.importnewclient.parser.ArticleBodyParser;
 import okhttp3.Interceptor;
@@ -25,11 +27,18 @@ public class ArticleBodyInterceptor implements Interceptor {
 
         Response response = chain.proceed(chain.request());
         //是文章的URL
-        if (request.url().toString().matches(".*\\.html")) {
+        if (isArticleUrl(response.request().url().toString())) {
             response = response.newBuilder().body(filter(response.body())).build();
         }
 
         return response;
+    }
+
+    private boolean isArticleUrl(String url) {
+
+        Pattern pattern = Pattern.compile("http.+((importnew)|(jobbole))\\.com/\\d{2,}+");
+        Matcher matcher = pattern.matcher(url);
+        return matcher.find();
     }
 
     private ResponseBody filter(final ResponseBody responseBody) {

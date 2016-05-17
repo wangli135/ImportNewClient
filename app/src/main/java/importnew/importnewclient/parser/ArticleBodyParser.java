@@ -1,8 +1,13 @@
 package importnew.importnewclient.parser;
 
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import importnew.importnewclient.utils.Constants.Regex;
 
 /**
  * 解析一篇文章
@@ -18,36 +23,57 @@ public class ArticleBodyParser {
      */
     public static String parserArticleBody(String html) {
 
+        if(TextUtils.isEmpty(html)){
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder();
 
         //提取header部分
-        Pattern pattern = Pattern.compile("<!DOCTYPE.+</head>", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(Regex.BODY_HEAD, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(html);
         String left = "";
         while (matcher.find()) {
-           // System.out.println(html.substring(matcher.start(), matcher.end()));
             sb.append(html.substring(0, matcher.end()));
             left = html.substring(matcher.end());
         }
 
-        //删除头部
-        pattern = Pattern.compile("<!-- BEGIN header -->.+<!-- END header -->", Pattern.DOTALL);
+
+        //删除top-nav节点
+        pattern = Pattern.compile(Regex.BODY_DELETE_TOPNAV,Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start())).append("<br>");
             left = left.substring(matcher.end());
         }
 
-        //删除entery-meta部分
-        pattern = Pattern.compile("<!-- BEGIN \\.entry-meta -->.+<!-- END \\.entry-meta -->", Pattern.DOTALL);
+        //删除头部
+        pattern = Pattern.compile(Regex.BODY_DELETE_HEAD, Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start()));
             left = left.substring(matcher.end());
         }
 
+        //删除entery-meta部分
+        pattern = Pattern.compile(Regex.BODY_DELETE_ENTRY_META, Pattern.DOTALL);
+        matcher = pattern.matcher(left);
+        while (matcher.find()) {
+            sb.append(left.substring(0, matcher.start()));
+            left = left.substring(matcher.end());
+        }
+
+        //删除伯乐在线文章的打赏部分,赞、收藏按钮
+        pattern = Pattern.compile(Regex.BODY_DELETE_REWARDS, Pattern.DOTALL);
+        matcher = pattern.matcher(left);
+        while (matcher.find()) {
+            sb.append(left.substring(0, matcher.start()));
+            left = left.substring(matcher.end());
+        }
+
+
         //提取文章末尾分享、广告部分
-        pattern = Pattern.compile("<!-- JiaThis Button BEGIN -->.+<!-- END \\.post -->", Pattern.DOTALL);
+        pattern = Pattern.compile(Regex.BODY_DELETE_AD, Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start()));
@@ -55,7 +81,15 @@ public class ArticleBodyParser {
         }
 
         //删除评论部分
-        pattern = Pattern.compile("<!-- BEGIN #respond -->.+<!-- END \\.navigation -->", Pattern.DOTALL);
+        pattern = Pattern.compile(Regex.BODY_DELETE_COMMENTS, Pattern.DOTALL);
+        matcher = pattern.matcher(left);
+        while (matcher.find()) {
+            sb.append(left.substring(0, matcher.start()));
+            left = left.substring(matcher.end());
+        }
+
+        //删除伯乐在线文章的底部登录部分
+        pattern=Pattern.compile("<div id=\"article-comment\".+</div>",Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start()));
@@ -63,7 +97,7 @@ public class ArticleBodyParser {
         }
 
         //删除sidebar部分
-        pattern = Pattern.compile("<!-- BEGIN #sidebar -->.+<!-- END #sidebar -->", Pattern.DOTALL);
+        pattern = Pattern.compile(Regex.BODY_DELETE_SIDEBAR, Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start()));
@@ -71,7 +105,7 @@ public class ArticleBodyParser {
         }
 
         //删除footer部分
-        pattern = Pattern.compile("<!-- BEGIN footer -->.+<!-- END footer -->", Pattern.DOTALL);
+        pattern = Pattern.compile(Regex.BODY_DELETE_FOOTER, Pattern.DOTALL);
         matcher = pattern.matcher(left);
         while (matcher.find()) {
             sb.append(left.substring(0, matcher.start()));
@@ -79,6 +113,8 @@ public class ArticleBodyParser {
         }
 
         sb.append(left);
+
+        Log.i("wangli", sb.toString());
 
         return sb.toString();
     }

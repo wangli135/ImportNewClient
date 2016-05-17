@@ -4,13 +4,12 @@
     android:layout_width="match_parent"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
-    android:layout_height="100dp">
+    android:layout_height="120dp">
 
     <TextView
         android:gravity="center_vertical"
         android:maxLines="2"
         android:padding="5dp"
-        android:text="Title"
         android:ellipsize="end"
         android:textSize="13sp"
         android:textAppearance="@android:style/TextAppearance.Material.Title"
@@ -22,14 +21,14 @@
         android:src="@drawable/emptyview"
         android:layout_below="@id/article_title"
         android:id="@id/article_img"
-        android:layout_width="48dp"
-        android:layout_height="48dp" />
+        android:layout_width="64dp"
+        android:layout_height="64dp" />
 
     <TextView
         android:maxLines="3"
         android:textSize="12sp"
         android:textAppearance="@android:style/TextAppearance.Material"
-        android:layout_alignBottom="@id/article_img"
+        android:layout_alignTop="@id/article_img"
         android:ellipsize="end"
         android:layout_marginLeft="5dp"
         android:layout_below="@id/article_title"
@@ -41,10 +40,9 @@
     <TextView
         android:gravity="center_vertical"
         android:layout_marginTop="3dp"
-        android:text="1条评论"
         android:textSize="10sp"
         android:layout_alignRight="@id/article_desc"
-        android:layout_below="@id/article_desc"
+        android:layout_below="@id/article_img"
         android:id="@+id/article_comment_num"
         android:layout_width="wrap_content"
         android:layout_height="16dp" />
@@ -54,11 +52,10 @@
         android:id="@+id/article_date"
         android:layout_width="wrap_content"
         android:layout_height="16dp"
-        android:layout_below="@id/article_desc"
+        android:layout_below="@id/article_img"
         android:layout_marginTop="3dp"
         android:layout_toLeftOf="@id/article_comment_num"
         android:gravity="center_vertical"
-        android:text="2016/15/23"
         android:textSize="10sp" />
 
 </RelativeLayout>
