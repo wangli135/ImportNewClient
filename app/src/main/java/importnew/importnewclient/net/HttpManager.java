@@ -1,11 +1,11 @@
 package importnew.importnewclient.net;
 
 import android.content.Context;
-import android.os.Environment;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import importnew.importnewclient.utils.AppUtil;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 
@@ -36,7 +36,7 @@ public class HttpManager {
     private HttpManager(Context context) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS).addInterceptor(new ArticleBodyInterceptor()).retryOnConnectionFailure(true);
-        File cacheFile = getDiskCacheDir(context, "response");
+        File cacheFile = AppUtil.getDiskCacheDir(context, "response");
         if (!cacheFile.exists()) {
             cacheFile.exists();
         }
@@ -48,22 +48,4 @@ public class HttpManager {
         return client;
     }
 
-    /**
-     * 根据传入的filename获取硬盘缓存的路径地址
-     *
-     * @param context
-     * @param filename
-     * @return
-     */
-    private File getDiskCacheDir(Context context, String filename) {
-
-        String cachePath;
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !Environment.isExternalStorageRemovable()) {
-            cachePath = context.getExternalCacheDir().getPath();
-        } else {
-            cachePath = context.getCacheDir().getPath();
-        }
-
-        return new File(cachePath + File.separator + filename);
-    }
 }

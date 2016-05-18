@@ -131,11 +131,11 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mSecondCache = SecondCache.getInstance(getContext());
         if (mArticles == null) {
             mArticles = new ArrayList<>();
-            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
+            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
             mListView.setAdapter(mAdapter);
             loadArticles();
         } else {
-            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles);
+            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
             mListView.setAdapter(mAdapter);
         }
 
@@ -177,7 +177,14 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         super.onPause();
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
-        mAdapter.flushCache();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.flushCache();
+            }
+        }).start();
+
 
     }
 

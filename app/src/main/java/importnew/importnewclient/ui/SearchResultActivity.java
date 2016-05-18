@@ -85,7 +85,7 @@ public class SearchResultActivity extends AppCompatActivity {
 
         mLoadMoreLv = (LoadMoreListView) findViewById(R.id.search_result_lv);
         mArticles = new ArrayList<>();
-        mAdapter = new ArticleAdapter(this, mArticles);
+        mAdapter = new ArticleAdapter(this, mArticles, mLoadMoreLv);
         mLoadMoreLv.setAdapter(mAdapter);
         mLoadMoreLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -105,7 +105,7 @@ public class SearchResultActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if(item.getItemId()==android.R.id.home){
+        if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
         }

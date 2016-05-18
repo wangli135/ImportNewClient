@@ -1,14 +1,15 @@
 package importnew.importnewclient.adapter;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -27,13 +28,12 @@ import importnew.importnewclient.utils.ThridCache;
 /**
  * Created by Xingfeng on 2016/5/3.
  */
-public class ArticleAdapter extends BaseAdapter {
+public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener, AbsListView.OnScrollListener {
 
     private List<Article> articles;
     private LayoutInflater mInflater;
 
     private Bitmap mLoadingBitmap;
-    private ListView listView;
     //三级缓存
     private ThridCache mThridCache;
 
@@ -41,12 +41,29 @@ public class ArticleAdapter extends BaseAdapter {
 
     private Context mContext;
 
-    public ArticleAdapter(Context context, List<Article> articles) {
+    private ListView mListView;
+
+    private VelocityTracker mVelocityTracker;
+
+    private static final int VELOCITY=500;
+
+    private boolean canLoadBitmaps = true;
+
+    private int mStart;
+    private int mEnd;
+
+    public ArticleAdapter(Context context, List<Article> articles, ListView listView) {
         this.articles = articles;
         mContext = context;
         mInflater = LayoutInflater.from(context);
         mThridCache = ThridCache.getInstance(context);
         tasks = new HashSet<>();
+
+        mVelocityTracker = VelocityTracker.obtain();
+
+        mListView = listView;
+        listView.setOnTouchListener(this);
+        listView.setOnScrollListener(this);
     }
 
     @Override
@@ -66,9 +83,6 @@ public class ArticleAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
-        if (listView == null)
-            listView = (ListView) parent;
 
         Article article = articles.get(position);
 
@@ -90,10 +104,13 @@ public class ArticleAdapter extends BaseAdapter {
         viewHolder.title.setText(article.getTitle());
         viewHolder.desc.setText(article.getDesc());
         viewHolder.img.setImageResource(R.drawable.emptyview);
+        viewHolder.img.setTag(article.getImgUrl());
         viewHolder.commentNum.setText(article.getCommentNum());
         viewHolder.date.setText(article.getDate());
 
-        loadBitmaps(article.getImgUrl(), viewHolder.img);
+        if (canLoadBitmaps)
+            loadBitmaps(article.getImgUrl(), viewHolder.img);
+
         return convertView;
     }
 
@@ -107,12 +124,9 @@ public class ArticleAdapter extends BaseAdapter {
         Bitmap bitmap = mThridCache.getBitmapFromMemory(url);
         if (bitmap != null && imageView != null) {
             imageView.setImageBitmap(bitmap);
-        } else if (cancelPotentialWork(url, imageView)) {
+        } else {
             //Step 2:从硬盘中获取
-            BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-            AsyncDrawable asyncDrawable = new AsyncDrawable(mContext
-                    .getResources(), mLoadingBitmap, task);
-            imageView.setImageDrawable(asyncDrawable);
+            BitmapWorkerTask task = new BitmapWorkerTask();
             task.execute(url);
         }
     }
@@ -129,36 +143,39 @@ public class ArticleAdapter extends BaseAdapter {
         }
     }
 
-    /**
-     * 获取传入的ImageView它所对应的BitmapWorkerTask。
-     */
-    private BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-        if (imageView != null) {
-            Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof AsyncDrawable) {
-                AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
-                return asyncDrawable.getBitmapWorkerTask();
-            }
-        }
-        return null;
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        mVelocityTracker.addMovement(event);
+        return false;
     }
 
-    /**
-     * 取消掉后台的潜在任务，当认为当前ImageView存在着一个另外图片请求任务时
-     * ，则把它取消掉并返回true，否则返回false。
-     */
-    public boolean cancelPotentialWork(String url, ImageView imageView) {
-        BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-        if (bitmapWorkerTask != null) {
-            String imageUrl = bitmapWorkerTask.imageUrl;
-            if (imageUrl == null || !imageUrl.equals(url)) {
-                bitmapWorkerTask.cancel(true);
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+        if (scrollState == SCROLL_STATE_IDLE) {
+
+            canLoadBitmaps = true;
+            for (int i = mStart; i < mEnd && i < articles.size(); i++) {
+                new BitmapWorkerTask().execute(articles.get(i).getImgUrl());
+            }
+
+        } else {
+            mVelocityTracker.computeCurrentVelocity(100);
+            if (Math.abs(mVelocityTracker.getYVelocity()) > VELOCITY) {
+                canLoadBitmaps = false;
             } else {
-                return false;
+                canLoadBitmaps = true;
             }
         }
-        return true;
+
     }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        mStart = firstVisibleItem;
+        mEnd = firstVisibleItem + visibleItemCount;
+    }
+
 
     class ViewHolder {
         TextView title;
@@ -166,27 +183,6 @@ public class ArticleAdapter extends BaseAdapter {
         TextView desc;
         TextView commentNum;
         TextView date;
-    }
-
-
-    /**
-     * 自定义的一个Drawable，让这个Drawable持有BitmapWorkerTask的弱引用。
-     */
-    class AsyncDrawable extends BitmapDrawable {
-
-        private WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
-
-        public AsyncDrawable(Resources res, Bitmap bitmap,
-                             BitmapWorkerTask bitmapWorkerTask) {
-            super(res, bitmap);
-            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(
-                    bitmapWorkerTask);
-        }
-
-        public BitmapWorkerTask getBitmapWorkerTask() {
-            return bitmapWorkerTaskReference.get();
-        }
-
     }
 
 
@@ -199,9 +195,6 @@ public class ArticleAdapter extends BaseAdapter {
 
         private WeakReference<ImageView> imageViewWeakReference;
 
-        public BitmapWorkerTask(ImageView imageView) {
-            imageViewWeakReference = new WeakReference<ImageView>(imageView);
-        }
 
         @Override
         protected BitmapDrawable doInBackground(String... params) {
@@ -224,23 +217,12 @@ public class ArticleAdapter extends BaseAdapter {
         @Override
         protected void onPostExecute(BitmapDrawable bitmap) {
             super.onPostExecute(bitmap);
-            ImageView imageView = getAttachedImageView();
+            ImageView imageView = (ImageView) mListView.findViewWithTag(imageUrl);
             if (bitmap != null && imageView != null) {
                 imageView.setImageDrawable(bitmap);
             }
             tasks.remove(this);
         }
 
-        /**
-         * 获取当前BitmapWorkerTask所关联的ImageView。
-         */
-        private ImageView getAttachedImageView() {
-            ImageView imageView = imageViewWeakReference.get();
-            BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-            if (this == bitmapWorkerTask) {
-                return imageView;
-            }
-            return null;
-        }
     }
 }

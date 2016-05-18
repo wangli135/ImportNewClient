@@ -220,6 +220,7 @@ public class ThridCache {
             cacheKey = bytesToHexString(messageDigest.digest());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+            return cacheKey;
         }
         return cacheKey;
     }
