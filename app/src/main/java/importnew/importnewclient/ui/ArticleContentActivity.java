@@ -11,6 +11,8 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -43,7 +45,9 @@ public class ArticleContentActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_PROGRESS);
         setContentView(R.layout.activity_article_content);
+        //setProgressBarIndeterminate(false);
         mArticle = (Article) getIntent().getParcelableExtra(Constants.Key.ARTICLE);
         isFavourite = mArticle.isFavourite();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -68,6 +72,14 @@ public class ArticleContentActivity extends AppCompatActivity {
                 return true;
             }
         });
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                setProgress(newProgress*100);
+            }
+        });
+
 
         worker = new LoadAndParserWorker();
         worker.execute();
@@ -122,15 +134,15 @@ public class ArticleContentActivity extends AppCompatActivity {
 
             }
             break;
-            case R.id.action_share:{
+            case R.id.action_share: {
                 Intent share = new Intent(Intent.ACTION_SEND);
                 share.setType("text/plain");
                 share.putExtra(Intent.EXTRA_TITLE, mArticle.getTitle());
                 share.putExtra(Intent.EXTRA_TEXT, mArticle.getDesc());
                 share.putExtra(Intent.EXTRA_HTML_TEXT, mArticle.getUrl());
-                startActivity(Intent.createChooser(share,"Share"));
+                startActivity(Intent.createChooser(share, "Share"));
             }
-                break;
+            break;
 
             case android.R.id.home:
                 Intent intent = new Intent();

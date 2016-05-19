@@ -45,7 +45,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
 
     private VelocityTracker mVelocityTracker;
 
-    private static final int VELOCITY=500;
+    private static final int VELOCITY = 500;
 
     private boolean canLoadBitmaps = true;
 
@@ -110,6 +110,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
 
         if (canLoadBitmaps)
             loadBitmaps(article.getImgUrl(), viewHolder.img);
+
 
         return convertView;
     }

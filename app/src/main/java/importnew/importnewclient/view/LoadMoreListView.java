@@ -55,6 +55,10 @@ public class LoadMoreListView extends ListView implements AbsListView.OnScrollLi
         init(context);
     }
 
+    @Override
+    public void setOnScrollListener(OnScrollListener onScrollListener) {
+        this.onScrollListener = onScrollListener;
+    }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -67,6 +71,7 @@ public class LoadMoreListView extends ListView implements AbsListView.OnScrollLi
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
 
         if (onScrollListener != null) {
             onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);

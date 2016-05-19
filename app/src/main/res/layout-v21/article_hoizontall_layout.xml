@@ -15,14 +15,14 @@
         android:textAppearance="@android:style/TextAppearance.Material.Title"
         android:id="@id/article_title"
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="36dp" />
 
     <ImageView
         android:src="@drawable/emptyview"
         android:layout_below="@id/article_title"
         android:id="@id/article_img"
         android:layout_width="64dp"
-        android:layout_height="64dp" />
+        android:layout_height="48dp" />
 
     <TextView
         android:maxLines="3"

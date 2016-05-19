@@ -9,7 +9,7 @@
     <TextView
         android:id="@+id/article_title"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="36dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="2"
@@ -20,7 +20,7 @@
         android:src="@drawable/emptyview"
         android:id="@+id/article_img"
         android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_height="48dp"
         android:layout_below="@id/article_title"
         android:layout_marginTop="3dp" />
 
