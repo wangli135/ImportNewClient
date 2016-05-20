@@ -6,6 +6,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <importnew.importnewclient.view.LoadMoreListView
+        android:footerDividersEnabled="false"
         android:divider="@drawable/listview_divider"
         android:background="@android:color/white"
         android:scrollbars="vertical"

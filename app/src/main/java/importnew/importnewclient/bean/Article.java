@@ -1,6 +1,5 @@
 package importnew.importnewclient.bean;
 
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -30,19 +29,12 @@ public class Article implements Parcelable {
      */
     private String desc;
 
-    /**
-     * 文章对应html文本
-     */
-    private String bodyString;
-
 
     protected Article(Parcel in) {
         url = in.readString();
         imgUrl = in.readString();
         title = in.readString();
         desc = in.readString();
-        bodyString = in.readString();
-        bitmap = in.readParcelable(Bitmap.class.getClassLoader());
         commentNum = in.readString();
         date = in.readString();
         isFavourite = in.readByte() != 0;
@@ -54,8 +46,6 @@ public class Article implements Parcelable {
         dest.writeString(imgUrl);
         dest.writeString(title);
         dest.writeString(desc);
-        dest.writeString(bodyString);
-        dest.writeParcelable(bitmap, flags);
         dest.writeString(commentNum);
         dest.writeString(date);
         dest.writeByte((byte) (isFavourite ? 1 : 0));
@@ -78,18 +68,6 @@ public class Article implements Parcelable {
         }
     };
 
-    public String getBodyString() {
-        return bodyString;
-    }
-
-    public void setBodyString(String bodyString) {
-        this.bodyString = bodyString;
-    }
-
-    /**
-     * 图片
-     */
-    private Bitmap bitmap;
 
     /**
      * 评论数目
@@ -110,13 +88,11 @@ public class Article implements Parcelable {
     public Article() {
     }
 
-    public Article(String url, String imgUrl, String title, String desc, String bodyString, Bitmap bitmap, String commentNum, String date, boolean isFavourite) {
+    public Article(String url, String imgUrl, String title, String desc, String commentNum, String date, boolean isFavourite) {
         this.url = url;
         this.imgUrl = imgUrl;
         this.title = title;
         this.desc = desc;
-        this.bodyString = bodyString;
-        this.bitmap = bitmap;
         this.commentNum = commentNum;
         this.date = date;
         this.isFavourite = isFavourite;
@@ -171,15 +147,6 @@ public class Article implements Parcelable {
         this.date = date;
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
-
-
     public boolean isFavourite() {
         return isFavourite;
     }
@@ -213,8 +180,6 @@ public class Article implements Parcelable {
                 ", imgUrl='" + imgUrl + '\'' +
                 ", title='" + title + '\'' +
                 ", desc='" + desc + '\'' +
-                ", bodyString='" + bodyString + '\'' +
-                ", bitmap=" + bitmap +
                 ", commentNum=" + commentNum +
                 ", date='" + date + '\'' +
                 ", isFavourite=" + isFavourite +

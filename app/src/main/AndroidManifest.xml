@@ -19,7 +19,9 @@
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.ArticleContentActivity" />
+        <activity
+            android:name=".ui.ArticleContentActivity"
+            android:launchMode="singleTop" />
         <activity
             android:name=".ui.SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

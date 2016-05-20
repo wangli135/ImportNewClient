@@ -29,7 +29,8 @@ public class AllArticlesFragment extends Fragment {
     private List<ArticleListFragment> fragments;
     private String[] pageTitles;
 
-   private FragmentStatePagerAdapter mAdapter;
+    private FragmentStatePagerAdapter mAdapter;
+
     public AllArticlesFragment() {
     }
 
@@ -43,8 +44,8 @@ public class AllArticlesFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mTabLayout=(TabLayout) view.findViewById(R.id.tabLayout);
-        mViewPager=(ViewPager)view.findViewById(R.id.viewpager);
+        mTabLayout = (TabLayout) view.findViewById(R.id.tabLayout);
+        mViewPager = (ViewPager) view.findViewById(R.id.viewpager);
         initDatas();
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
@@ -52,18 +53,19 @@ public class AllArticlesFragment extends Fragment {
 
     }
 
-    private void initDatas(){
+    private void initDatas() {
 
-        pageTitles=getResources().getStringArray(R.array.pageTitle);
+        pageTitles = getResources().getStringArray(R.array.pageTitle);
 
-        fragments=new ArrayList<>();
+        fragments = new ArrayList<>();
+        fragments.add(ArticleListFragment.newInstance(URLManager.ALL_POSTS));
         fragments.add(ArticleListFragment.newInstance(URLManager.NEWS));
         fragments.add(ArticleListFragment.newInstance(URLManager.WEB));
         fragments.add(ArticleListFragment.newInstance(URLManager.ARCHITECUTRE));
         fragments.add(ArticleListFragment.newInstance(URLManager.BASIC));
         fragments.add(ArticleListFragment.newInstance(URLManager.BOOKS));
         fragments.add(ArticleListFragment.newInstance(URLManager.TUTORIAL));
-        mAdapter=new FragmentStatePagerAdapter(getChildFragmentManager()) {
+        mAdapter = new FragmentStatePagerAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
                 return fragments.get(position);

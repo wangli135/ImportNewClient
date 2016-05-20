@@ -15,8 +15,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.util.List;
-
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
@@ -29,23 +27,31 @@ public class MainActivity extends AppCompatActivity
 
     private Toolbar toolbar;
 
+    private DrawerLayout drawer;
+
     private Fragment mFragment;
 
-    private List<Fragment> fragmentList;
-
     private Article selectedArticle;
+
+    /**
+     * 正在显示的Fragment
+     */
+    private int numOfFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState != null) {
+            numOfFragment = savedInstanceState.getInt(Constants.Key.NUM_OF_FRAGMENT);
+        }
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(choicesId[0]);
         setSupportActionBar(toolbar);
 
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -59,8 +65,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initFragments() {
+
         mFragment = new HomePageFragment();
-        toolbar.setTitle(choicesId[0]);
+
+        switch (numOfFragment) {
+            case 0:
+                mFragment = new HomePageFragment();
+                break;
+            case 1:
+                mFragment = new AllArticlesFragment();
+                break;
+            case 2:
+                mFragment = new HotArticleFragment();
+                break;
+            case 3:
+                mFragment = new MoreContentsFragment();
+                break;
+        }
+
+        toolbar.setTitle(choicesId[numOfFragment]);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_contents, mFragment).commit();
     }
 
@@ -130,6 +153,7 @@ public class MainActivity extends AppCompatActivity
             if (!(mFragment instanceof HomePageFragment))
                 mFragment = new HomePageFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+            numOfFragment = 0;
 
         } else if (id == R.id.all_artciles) {
 
@@ -137,6 +161,7 @@ public class MainActivity extends AppCompatActivity
             if (!(mFragment instanceof AllArticlesFragment))
                 mFragment = new AllArticlesFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+            numOfFragment = 1;
 
         } else if (id == R.id.hot_artciles) {
 
@@ -144,6 +169,7 @@ public class MainActivity extends AppCompatActivity
             if (!(mFragment instanceof HotArticleFragment))
                 mFragment = new HotArticleFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+            numOfFragment = 2;
 
         } else if (id == R.id.more_contents) {
 
@@ -151,14 +177,21 @@ public class MainActivity extends AppCompatActivity
             if (!(mFragment instanceof MoreContentsFragment))
                 mFragment = new MoreContentsFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+            numOfFragment = 3;
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer= (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(Constants.Key.NUM_OF_FRAGMENT, numOfFragment);
     }
 }
