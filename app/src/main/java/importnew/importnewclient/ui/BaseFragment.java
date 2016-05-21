@@ -19,7 +19,6 @@ public class BaseFragment extends Fragment {
     protected OnArticleSelectedListener onArticleSelectedListener;
     protected Context mContext;
     protected SecondCache mSecondCache;
-//    protected OkHttpClient httpClient;
 
     @Override
     public void onAttach(Context context) {

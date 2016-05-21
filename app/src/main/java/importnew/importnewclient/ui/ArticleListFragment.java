@@ -88,7 +88,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
         mSwipeRefreshLayout.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
         mSwipeRefreshLayout.setEnabled(true);
-        mSwipeRefreshLayout.setRefreshing(true);
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -230,6 +229,13 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     class ArticleGetTask extends AsyncTask<String, Void, List<Article>> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (!isLoading)
+                mSwipeRefreshLayout.setRefreshing(true);
+        }
+
+        @Override
         protected List<Article> doInBackground(String... params) {
 
             String url = params[0];
@@ -267,7 +273,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
             }
 
-            isLoading = false;
+            isLoading = true;
             mSwipeRefreshLayout.setRefreshing(false);
             mListView.dismissFootView();
         }

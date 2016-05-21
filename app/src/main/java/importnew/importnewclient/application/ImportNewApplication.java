@@ -3,6 +3,8 @@ package importnew.importnewclient.application;
 import android.app.Application;
 import android.util.DisplayMetrics;
 
+import im.fir.sdk.FIR;
+
 /**
  * Created by Xingfeng on 2016/5/9.
  */
@@ -21,16 +23,17 @@ public class ImportNewApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        //初始化BUGHD SDK
+        FIR.init(this);
         getWidthAndHeight();
 
     }
 
-    private void  getWidthAndHeight(){
+    private void getWidthAndHeight() {
 
-        DisplayMetrics metrics=getResources().getDisplayMetrics();
-        SCREEN_WIDTH=metrics.widthPixels;
-        SCREEN_HEIGHT=metrics.heightPixels;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        SCREEN_WIDTH = metrics.widthPixels;
+        SCREEN_HEIGHT = metrics.heightPixels;
 
     }
 }

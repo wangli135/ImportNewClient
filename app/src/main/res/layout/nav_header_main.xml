@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
     android:background="@drawable/side_nav_bar"
-    android:gravity="bottom"
+    android:gravity="center_vertical"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -12,19 +12,18 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <TextView
-        android:layout_marginBottom="20dp"
-        android:textSize="30sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ImportNew"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="30sp" />
 
     <TextView
-        android:layout_marginBottom="20dp"
-        android:textSize="16sp"
+        android:layout_marginTop="10dp"
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/java_android" />
+        android:text="@string/java_android"
+        android:textSize="16sp" />
 
 </LinearLayout>
