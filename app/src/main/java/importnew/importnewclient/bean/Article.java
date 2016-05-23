@@ -3,6 +3,9 @@ package importnew.importnewclient.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * 文章实体类
  * Created by Xingfeng on 2016/4/30.
@@ -111,7 +114,19 @@ public class Article implements Parcelable {
     }
 
     public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
+
+        if (imgUrl.matches("((http)|(www)).+\\.((png)|(jpeg)|(jpg)|(gif))")) {
+            this.imgUrl = imgUrl;
+        } else {
+
+            Pattern pattern = Pattern.compile("www.+\\.((png)|(jpeg)|(jpg)|(gif))");
+            Matcher matcher = pattern.matcher(imgUrl);
+            while (matcher.find()) {
+                this.imgUrl = "http://"+imgUrl.substring(matcher.start(), matcher.end());
+            }
+
+        }
+
     }
 
     public String getTitle() {

@@ -11,7 +11,7 @@ import java.io.InputStream;
  * Bitmap工具类，用于缩放Bitmap
  * Created by Xingfeng on 2016/5/3.
  */
-public class BitmapUtil {
+public class ImageResizer {
 
     /**
      * 求缩放比例

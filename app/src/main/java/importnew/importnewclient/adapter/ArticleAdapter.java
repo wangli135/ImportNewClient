@@ -2,8 +2,8 @@ package importnew.importnewclient.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -15,14 +15,13 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.utils.ThridCache;
+import importnew.importnewclient.utils.ImageLoader;
 
 
 /**
@@ -33,9 +32,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     private List<Article> articles;
     private LayoutInflater mInflater;
 
-    private Bitmap mLoadingBitmap;
-    //三级缓存
-    private ThridCache mThridCache;
+    private ImageLoader mImageLoader;
 
     private Set<BitmapWorkerTask> tasks;
 
@@ -56,7 +53,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         this.articles = articles;
         mContext = context;
         mInflater = LayoutInflater.from(context);
-        mThridCache = ThridCache.getInstance(context);
+        mImageLoader = ImageLoader.getInstance(context);
         tasks = new HashSet<>();
 
         mVelocityTracker = VelocityTracker.obtain();
@@ -92,7 +89,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             viewHolder = new ViewHolder();
             viewHolder.title = (TextView) convertView.findViewById(R.id.article_title);
             viewHolder.img = (ImageView) convertView.findViewById(R.id.article_img);
-            viewHolder.img.setTag(article.getImgUrl());
             viewHolder.desc = (TextView) convertView.findViewById(R.id.article_desc);
             viewHolder.commentNum = (TextView) convertView.findViewById(R.id.article_comment_num);
             viewHolder.date = (TextView) convertView.findViewById(R.id.article_date);
@@ -104,13 +100,15 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         viewHolder.title.setText(article.getTitle());
         viewHolder.desc.setText(article.getDesc());
         viewHolder.img.setImageResource(R.drawable.emptyview);
-        viewHolder.img.setTag(article.getImgUrl());
         viewHolder.commentNum.setText(article.getCommentNum());
         viewHolder.date.setText(article.getDate());
 
-        if (canLoadBitmaps)
-            loadBitmaps(article.getImgUrl(), viewHolder.img);
+        if (!TextUtils.isEmpty(article.getImgUrl())) {
+            viewHolder.img.setTag(article.getImgUrl());
+            if (canLoadBitmaps)
+                loadBitmaps(article.getImgUrl(), viewHolder.img);
 
+        }
 
         return convertView;
     }
@@ -122,12 +120,13 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         }
 
         //Step 1：从内存中检索
-        Bitmap bitmap = mThridCache.getBitmapFromMemory(url);
+        Bitmap bitmap = mImageLoader.getBitmapFromMemory(url);
         if (bitmap != null && imageView != null) {
             imageView.setImageBitmap(bitmap);
         } else {
             //Step 2:从硬盘中获取
             BitmapWorkerTask task = new BitmapWorkerTask();
+            tasks.add(task);
             task.execute(url);
         }
     }
@@ -138,11 +137,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         }
     }
 
-    public void flushCache() {
-        if (mThridCache != null) {
-            mThridCache.flushCache();
-        }
-    }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -190,37 +184,29 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     /**
      * 获取Bitmap，先从硬盘缓存中，再从网络
      */
-    class BitmapWorkerTask extends AsyncTask<String, Void, BitmapDrawable> {
+    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
 
         private String imageUrl;
 
-        private WeakReference<ImageView> imageViewWeakReference;
-
 
         @Override
-        protected BitmapDrawable doInBackground(String... params) {
+        protected Bitmap doInBackground(String... params) {
 
             imageUrl = params[0];
 
-            Bitmap bitmap = mThridCache.getBitmapFromDiskCache(imageUrl);
-            if (bitmap == null) {
-                bitmap = mThridCache.getBitmapFromNetwork(imageUrl);
-            }
+            Bitmap bitmap = mImageLoader.getBitmap(imageUrl);
 
-            if (bitmap != null)
-                return new BitmapDrawable(mContext.getResources(), bitmap);
-
-            return null;
+            return bitmap;
 
         }
 
 
         @Override
-        protected void onPostExecute(BitmapDrawable bitmap) {
+        protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
             ImageView imageView = (ImageView) mListView.findViewWithTag(imageUrl);
             if (bitmap != null && imageView != null) {
-                imageView.setImageDrawable(bitmap);
+                imageView.setImageBitmap(bitmap);
             }
             tasks.remove(this);
         }

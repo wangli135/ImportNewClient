@@ -22,6 +22,7 @@ import importnew.importnewclient.adapter.HotArticleAdapter;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HotArticlesParser;
+import importnew.importnewclient.view.DividerItemDecoration;
 
 /**
  * 本月热门文章
@@ -59,6 +60,7 @@ public class MostDiscussedFragment extends BaseFragment {
         layoutManager = new LinearLayoutManager(getActivity());
         mRecycleView.setLayoutManager(layoutManager);
         mRecycleView.setItemAnimator(new DefaultItemAnimator());
+        mRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         mRecycleView.setAdapter(mAdapter);
 
         loadHotArticles();

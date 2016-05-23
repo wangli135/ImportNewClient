@@ -177,14 +177,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.flushCache();
-            }
-        }).start();
-
-
     }
 
     @Override
