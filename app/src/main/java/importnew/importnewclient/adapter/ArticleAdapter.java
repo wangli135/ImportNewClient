@@ -101,6 +101,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
 
         viewHolder.title.setText(article.getTitle());
         viewHolder.desc.setText(article.getDesc());
+        viewHolder.img.setVisibility(View.VISIBLE);
         viewHolder.img.setImageResource(R.drawable.emptyview);
         viewHolder.commentNum.setText(article.getCommentNum());
         viewHolder.date.setText(article.getDate());
@@ -109,7 +110,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             viewHolder.img.setTag(article.getImgUrl());
             if (canLoadBitmaps)
                 loadBitmaps(article.getImgUrl(), viewHolder.img);
-
         }
 
         return convertView;
@@ -118,7 +118,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     private void loadBitmaps(String url, final ImageView imageView) {
 
         if (url == null) {
-            return;
+            imageView.setVisibility(View.GONE);
         }
 
         //Step 1：从内存中检索
@@ -153,7 +153,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
 
             canLoadBitmaps = true;
             for (int i = mStart; i < mEnd && i < articles.size(); i++) {
-                new BitmapWorkerTask().execute(articles.get(i).getImgUrl());
+                new BitmapWorkerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, articles.get(i).getImgUrl());
             }
 
         } else {

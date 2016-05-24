@@ -106,11 +106,6 @@ public class HomePageFragment extends BaseFragment {
 
         mRefreshLayout.setRefreshing(false);
 
-        if (mHomePageAdapter != null) {
-            mHomePageAdapter.flushCache();
-        }
-
-
     }
 
     @Override

@@ -128,15 +128,10 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         });
 
         mSecondCache = SecondCache.getInstance(getContext());
-        if (mArticles == null) {
-            mArticles = new ArrayList<>();
-            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
-            mListView.setAdapter(mAdapter);
-            loadArticles();
-        } else {
-            mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
-            mListView.setAdapter(mAdapter);
-        }
+        mArticles = new ArrayList<>();
+        mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
+        mListView.setAdapter(mAdapter);
+        loadArticles();
 
 
     }
@@ -151,7 +146,10 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
                 if (!TextUtils.isEmpty(html)) {
                     List<Article> list = ArticlesParser.parserArtciles(html);
+
                     for (int i = 0; i < list.size(); i++) {
+
+
                         if (!mArticles.contains(list.get(i))) {
                             mArticles.add(i, list.get(i));
                         } else
@@ -199,7 +197,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     private void loadArticles() {
         category = (String) getArguments().get(Constants.Key.ARTICLE_BASE_URL);
         String url = category + (pageNum++);
-        new ArticleGetTask().execute(url);
+        new ArticleGetTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
     }
 
     @Override
@@ -257,15 +255,29 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
             } else if (articles.size() > 0) {
 
-                for (Article article : articles) {
-                    if (!mArticles.contains(article))
-                        mArticles.add(article);
+                if (mArticles.size() > 0) {
+
+                    /**
+                     * 无重合
+                     */
+                    int index = -1;
+                    if ((index = articles.indexOf(mArticles.get(mArticles.size() - 1))) == -1) {
+                        mArticles.addAll(articles);
+                    } else {
+                        for (int i = index + 1; i < articles.size(); i++) {
+                            mArticles.add(articles.get(i));
+                        }
+                    }
+
+                } else {
+                    mArticles.addAll(articles);
                 }
+
                 mAdapter.notifyDataSetChanged();
 
             }
 
-            isLoading = true;
+            isLoading = false;
             mSwipeRefreshLayout.setRefreshing(false);
             mListView.dismissFootView();
         }

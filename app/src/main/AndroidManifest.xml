@@ -55,8 +55,8 @@
             android:value="905a552f3ef36b3be88981b5b45a2fc6" />
 
         <activity
-            android:name=".ui.SettingsActivity"
             android:parentActivityName=".ui.MainActivity"
+            android:name=".ui.SettingsActivity"
             android:label="@string/title_activity_settings"></activity>
     </application>
 
