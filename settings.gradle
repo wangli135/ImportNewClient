@@ -1,1 +1,1 @@
-include ':app', ':loadmore'
+include ':app', ':loadmore', ':settings'

@@ -49,6 +49,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     private int mStart;
     private int mEnd;
 
+
     public ArticleAdapter(Context context, List<Article> articles, ListView listView) {
         this.articles = articles;
         mContext = context;
@@ -61,6 +62,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         mListView = listView;
         listView.setOnTouchListener(this);
         listView.setOnScrollListener(this);
+
     }
 
     @Override
@@ -127,7 +129,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             //Step 2:从硬盘中获取
             BitmapWorkerTask task = new BitmapWorkerTask();
             tasks.add(task);
-            task.execute(url);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
         }
     }
 

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
@@ -104,6 +105,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    private long lastBackTime;
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -111,8 +115,12 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
 
-
-            super.onBackPressed();
+            if (System.currentTimeMillis() - lastBackTime < 2000)
+                super.onBackPressed();
+            else {
+                Toast.makeText(this, "再次点击退出应用", Toast.LENGTH_SHORT).show();
+                lastBackTime = System.currentTimeMillis();
+            }
         }
     }
 
@@ -178,13 +186,15 @@ public class MainActivity extends AppCompatActivity
                 mFragment = new MoreContentsFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
             numOfFragment = 3;
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.menu_settings) {
 
-        } else if (id == R.id.nav_send) {
+            startActivity(new Intent(this, SettingsActivity.class));
+
+        } else if (id == R.id.menu_mode) {
 
         }
 
-        drawer= (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

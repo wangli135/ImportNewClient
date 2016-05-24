@@ -24,7 +24,7 @@ import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.ui.ArticleContentActivity;
 import importnew.importnewclient.ui.BaseFragment;
 import importnew.importnewclient.utils.Constants;
-import importnew.importnewclient.utils.ThridCache;
+import importnew.importnewclient.utils.ImageLoader;
 
 /**
  * Created by Xingfeng on 2016/5/16.
@@ -43,7 +43,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
      */
     private Set<BitmapWorkerTask> taskCollection;
 
-    private ThridCache mThridCache;
+    private ImageLoader mImageLoader;
 
     private Context mContext;
 
@@ -55,7 +55,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         articleList = mArticleBlock.getArticles();
 
         taskCollection = new HashSet<>();
-        mThridCache = ThridCache.getInstance(context);
+        mImageLoader = ImageLoader.getInstance(context);
         listView.setOnItemClickListener(this);
     }
 
@@ -110,11 +110,11 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
 
         try {
 
-            Bitmap bitmap = mThridCache.getBitmapFromMemory(imageUrl);
+            Bitmap bitmap = mImageLoader.getBitmapFromMemory(imageUrl);
             if (bitmap == null) {
                 BitmapWorkerTask task = new BitmapWorkerTask(articleImgView);
                 taskCollection.add(task);
-                task.execute(imageUrl);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, imageUrl);
             } else if (articleImgView != null && bitmap != null) {
                 articleImgView.setImageBitmap(bitmap);
             }
@@ -157,10 +157,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         protected Bitmap doInBackground(String... params) {
             imageUrl = params[0];
 
-            Bitmap bitmap = mThridCache.getBitmapFromDiskCache(imageUrl);
-            if (bitmap == null) {
-                bitmap = mThridCache.getBitmapFromNetwork(imageUrl);
-            }
+            Bitmap bitmap = mImageLoader.getBitmap(imageUrl);
             return bitmap;
         }
 
@@ -180,9 +177,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
      * 将缓存记录同步到journal文件中
      */
     public void flushCache() {
-        if (mThridCache != null) {
-            mThridCache.flushCache();
-        }
+
     }
 
     /**
