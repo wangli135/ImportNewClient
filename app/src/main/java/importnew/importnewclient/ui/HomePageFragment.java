@@ -1,7 +1,6 @@
 package importnew.importnewclient.ui;
 
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,18 +13,20 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.HomePageAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
-import importnew.importnewclient.net.ConnectionManager;
 import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
 import importnew.importnewclient.utils.ArctileBlockConverter;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -39,7 +40,6 @@ public class HomePageFragment extends BaseFragment {
 
     private List<ArticleBlock> articles;
 
-    private ArticleBlockWorker articleBlockWorker;
     private ListView mArticleBlokcListView;
     private HomePageAdapter mHomePageAdapter;
 
@@ -68,34 +68,15 @@ public class HomePageFragment extends BaseFragment {
             @Override
             public void onRefresh() {
 
-                mRefreshLayout.setRefreshing(true);
-                if (ConnectionManager.isOnline(mContext)) {
-                    refreshHomePage();
-                } else {
-                    try {
-                        TimeUnit.SECONDS.sleep(2);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                getHtmlAndParser(true);
 
-                    if (ConnectionManager.isOnline(mContext)) {
-                        refreshHomePage();
-                    } else {
-                        mRefreshLayout.setRefreshing(false);
-                        Toast.makeText(mContext, R.string.network_unable, Toast.LENGTH_SHORT).show();
-                    }
-                }
 
             }
         });
 
         mArticleBlokcListView = (ListView) view.findViewById(R.id.article_block_listview);
-        articles = new ArrayList<>();
-        mHomePageAdapter = new HomePageAdapter(getActivity(), articles);
-        mArticleBlokcListView.setAdapter(mHomePageAdapter);
 
-        getHtmlAndParser();
-
+        getHtmlAndParser(false);
 
     }
 
@@ -118,9 +99,6 @@ public class HomePageFragment extends BaseFragment {
             mHomePageAdapter.cancelAllTasks();
         }
 
-        if (articleBlockWorker != null) {
-            articleBlockWorker.cancel(true);
-        }
 
     }
 
@@ -151,44 +129,72 @@ public class HomePageFragment extends BaseFragment {
         }, mSecondCache, URLManager.HOMEPAGE);
     }
 
-    private void getHtmlAndParser() {
+    /**
+     * 获取文章首页
+     *
+     * @param isRefresh 是否属于刷新
+     */
+    private void getHtmlAndParser(boolean isRefresh) {
 
-        articleBlockWorker = new ArticleBlockWorker();
-        articleBlockWorker.execute(URLManager.HOMEPAGE);
+        mRefreshLayout.setRefreshing(true);
+        getArticles(isRefresh).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<ArticleBlock>>() {
+                    @Override
+                    public void onCompleted() {
+
+                        mRefreshLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mRefreshLayout.setRefreshing(false);
+                        Toast.makeText(mContext, "加载首页发生错误，请刷新重试", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(List<ArticleBlock> articleBlocks) {
+
+                        mHomePageAdapter = new HomePageAdapter(getActivity(), articleBlocks);
+                        mArticleBlokcListView.setAdapter(mHomePageAdapter);
+
+                    }
+                });
+
     }
 
 
-    class ArticleBlockWorker extends AsyncTask<String, Void, List<ArticleBlock>> {
+    /**
+     * 获取首页文章块
+     *
+     * @param isRefresh 是否刷新操作
+     * @return 解析出来的文章块
+     */
+    private Observable<List<ArticleBlock>> getArticles(final boolean isRefresh) {
 
-        @Override
-        protected List<ArticleBlock> doInBackground(String... params) {
+        return Observable.create(new Observable.OnSubscribe<List<ArticleBlock>>() {
+            @Override
+            public void call(Subscriber<? super List<ArticleBlock>> subscriber) {
 
-            String url = params[0];
-            String html = mSecondCache.getResponseFromDiskCache(url);
-            if (TextUtils.isEmpty(html))
-                html = mSecondCache.getResponseFromNetwork(url);
+                String html = "";
 
-            if (!TextUtils.isEmpty(html)) {
-                return ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html));
-            } else
-                return null;
+                if (!isRefresh)
+                    html = mSecondCache.getResponseFromDiskCache(URLManager.HOMEPAGE);
 
-        }
+                if (TextUtils.isEmpty(html)) {
+                    html = mSecondCache.getResponseFromNetwork(URLManager.HOMEPAGE);
+                }
 
-        @Override
-        protected void onPostExecute(List<ArticleBlock> articleBlocks) {
-            super.onPostExecute(articleBlocks);
+                if (TextUtils.isEmpty(html))
+                    subscriber.onError(new NullPointerException("未解析到文章主体"));
+                else
+                    subscriber.onNext(ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html)));
 
-            mRefreshLayout.setRefreshing(false);
-
-            if (articleBlocks != null) {
-
-                articles.clear();
-                articles.addAll(articleBlocks);
-                mHomePageAdapter.notifyDataSetChanged();
+                subscriber.onCompleted();
             }
-        }
+        });
+
     }
+
 
 
 }

@@ -2,7 +2,6 @@ package importnew.importnewclient.ui;
 
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,17 +17,19 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.ArticleAdapter;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.net.ConnectionManager;
-import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.parser.ArticlesParser;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
 import importnew.importnewclient.view.LoadMoreListView;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -92,26 +93,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mSwipeRefreshLayout.setRefreshing(true);
-                if (ConnectionManager.isOnline(mContext)) {
-                    refreshArticles();
-                } else {
-
-                    try {
-                        TimeUnit.SECONDS.sleep(2);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (ConnectionManager.isOnline(mContext)) {
-                        refreshArticles();
-                    } else {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(mContext, R.string.network_unable, Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-
+                refreshArticles();
             }
         });
 
@@ -131,6 +113,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mArticles = new ArrayList<>();
         mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
         mListView.setAdapter(mAdapter);
+        mSwipeRefreshLayout.setRefreshing(true);
         loadArticles();
 
 
@@ -139,34 +122,60 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     private void refreshArticles() {
 
-
-        new RefreshWorker(new RefreshWorker.OnRefreshListener() {
+        mSwipeRefreshLayout.setRefreshing(true);
+        Observable<List<Article>> observable = Observable.create(new Observable.OnSubscribe<List<Article>>() {
             @Override
-            public void onRefresh(String html) {
+            public void call(Subscriber<? super List<Article>> subscriber) {
 
-                if (!TextUtils.isEmpty(html)) {
-                    List<Article> list = ArticlesParser.parserArtciles(html);
+                String html = mSecondCache.getResponseFromNetwork(category + 1);
 
-                    for (int i = 0; i < list.size(); i++) {
+                if (TextUtils.isEmpty(html))
+                    subscriber.onError(new Exception("刷新出错"));
+                else {
+                    List<Article> articles = ArticlesParser.parserArtciles(html);
+                    subscriber.onNext(articles);
+                    subscriber.onCompleted();
+                }
 
+            }
+        });
 
-                        if (!mArticles.contains(list.get(i))) {
-                            mArticles.add(i, list.get(i));
-                        } else
+        observable.onBackpressureBuffer().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<List<Article>>() {
+            @Override
+            public void onCompleted() {
+
+                mSwipeRefreshLayout.setRefreshing(false);
+                mAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+                mSwipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(getActivity(), "加载页面出错，请重新刷新", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onNext(List<Article> articles) {
+
+                if (mArticles.isEmpty()) {
+                    mArticles.addAll(articles);
+                } else {
+                    for (Article article : articles) {
+                        if (!mArticles.get(0).equals(article))
+                            mArticles.add(article);
+                        else
                             break;
                     }
                 }
 
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAdapter.notifyDataSetChanged();
-                        mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
 
             }
-        }, mSecondCache, category + "1");
+        });
+
     }
 
     @Override
@@ -197,7 +206,68 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     private void loadArticles() {
         category = (String) getArguments().get(Constants.Key.ARTICLE_BASE_URL);
         String url = category + (pageNum++);
-        new ArticleGetTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+
+
+        parserArticles(url).onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<Article>>() {
+                    @Override
+                    public void onCompleted() {
+
+                        mSwipeRefreshLayout.setRefreshing(false);
+                        mAdapter.notifyDataSetChanged();
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        mSwipeRefreshLayout.setRefreshing(false);
+                        if (!isLoading)
+                            Toast.makeText(getActivity(), "加载内容发生错误，请重试", Toast.LENGTH_SHORT).show();
+                        else {
+                            mListView.setNoContentToLoad();
+                        }
+
+                    }
+
+                    @Override
+                    public void onNext(List<Article> articleList) {
+
+                        if (mArticles.isEmpty())
+                            mArticles.addAll(articleList);
+                        else {
+                            for (Article article : articleList) {
+                                if (!mArticles.get(mArticles.size() - 1).equals(article))
+                                    mArticles.add(article);
+                            }
+                        }
+
+                    }
+                });
+    }
+
+    private Observable<List<Article>> parserArticles(final String url) {
+
+        return Observable.create(new Observable.OnSubscribe<List<Article>>() {
+            @Override
+            public void call(Subscriber<? super List<Article>> subscriber) {
+
+                String html = mSecondCache.getResponseFromDiskCache(url);
+                if (TextUtils.isEmpty(html))
+                    html = mSecondCache.getResponseFromNetwork(url);
+
+                if (TextUtils.isEmpty(html))
+                    subscriber.onError(new Exception("加载页面无法解析"));
+                else {
+                    List<Article> articles = ArticlesParser.parserArtciles(html);
+                    subscriber.onNext(articles);
+                    subscriber.onCompleted();
+                }
+
+            }
+        });
+
+
     }
 
     @Override
@@ -212,75 +282,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
         getActivity().startActivityForResult(intent, Constants.Code.REQUEST_CODE);
 
-    }
-
-    private long lastTime;
-
-    class ArticleGetTask extends AsyncTask<String, Void, List<Article>> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (!isLoading)
-                mSwipeRefreshLayout.setRefreshing(true);
-        }
-
-        @Override
-        protected List<Article> doInBackground(String... params) {
-
-            String url = params[0];
-            String html = mSecondCache.getResponseFromDiskCache(url);
-            if (TextUtils.isEmpty(html))
-                html = mSecondCache.getResponseFromNetwork(url);
-
-            if (!TextUtils.isEmpty(html)) {
-                return ArticlesParser.parserArtciles(html);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Article> articles) {
-            super.onPostExecute(articles);
-
-            if (articles == null || articles.size() == 0) {
-                mListView.setNoContentToLoad();
-                mAdapter.notifyDataSetChanged();
-
-                if (System.currentTimeMillis() - lastTime > 2000) {
-                    Toast.makeText(mContext, "没有更多文章了", Toast.LENGTH_SHORT).show();
-                    lastTime = System.currentTimeMillis();
-                }
-
-            } else if (articles.size() > 0) {
-
-                if (mArticles.size() > 0) {
-
-                    /**
-                     * 无重合
-                     */
-                    int index = -1;
-                    if ((index = articles.indexOf(mArticles.get(mArticles.size() - 1))) == -1) {
-                        mArticles.addAll(articles);
-                    } else {
-                        for (int i = index + 1; i < articles.size(); i++) {
-                            mArticles.add(articles.get(i));
-                        }
-                    }
-
-                } else {
-                    mArticles.addAll(articles);
-                }
-
-                mAdapter.notifyDataSetChanged();
-
-            }
-
-            isLoading = false;
-            mSwipeRefreshLayout.setRefreshing(false);
-            mListView.dismissFootView();
-        }
     }
 
 

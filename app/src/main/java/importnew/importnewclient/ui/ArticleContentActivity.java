@@ -2,7 +2,6 @@ package importnew.importnewclient.ui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -23,6 +22,11 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * 显示文章详情的页面
@@ -40,8 +44,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     private WebView mWebView;
 
     private SecondCache mSecondCache;
-
-    private LoadAndParserWorker worker;
 
     /**
      * 是否收藏
@@ -71,23 +73,6 @@ public class ArticleContentActivity extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.article_progressbar);
         mWebView = (WebView) findViewById(R.id.article_webview);
         mWebView.setHorizontalScrollBarEnabled(false);
-//        mWebView.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//
-//                if (isArticleUrl(url)) {
-//                    Intent intent = new Intent(ArticleContentActivity.this, ArticleContentActivity.class);
-//                    intent.putExtra(Constants.Key.ARTICLE_URL, url);
-//                    startActivity(intent);
-//                    return true;
-//                } else {
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//                    startActivity(intent);
-//                    return false;
-//                }
-//
-//            }
-//        });
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -98,9 +83,57 @@ public class ArticleContentActivity extends AppCompatActivity {
 
         });
 
+        getArticleContent();
 
-        worker = new LoadAndParserWorker();
-        worker.execute();
+    }
+
+    private void getArticleContent() {
+
+        mProgressBar.setVisibility(View.VISIBLE);
+        Observable<String> contentObserver = Observable.create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+
+                String html = mSecondCache.getResponseFromDiskCache(mLoadUrl);
+
+                if (TextUtils.isEmpty(html)) {
+                    html = mSecondCache.getResponseFromNetwork(mArticle.getUrl());
+                }
+
+                if (TextUtils.isEmpty(html))
+                    subscriber.onError(new Exception("加载文章内容发生错误"));
+                else {
+                    subscriber.onNext(html);
+                    subscriber.onCompleted();
+                }
+
+            }
+        });
+
+        contentObserver.onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onCompleted() {
+
+                        mProgressBar.setVisibility(View.INVISIBLE);
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        Toast.makeText(ArticleContentActivity.this, "加载文章内容发生错误", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                        mWebView.loadDataWithBaseURL(null, s, "text/html", "UTF-8", null);
+
+                    }
+                });
 
     }
 
@@ -108,8 +141,7 @@ public class ArticleContentActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         mLoadUrl = intent.getStringExtra(Constants.Key.ARTICLE_URL);
-        worker = new LoadAndParserWorker();
-        worker.execute();
+        getArticleContent();
     }
 
     /**
@@ -128,9 +160,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (worker != null) {
-            worker.cancel(true);
-        }
     }
 
     @Override
@@ -202,40 +231,4 @@ public class ArticleContentActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    class LoadAndParserWorker extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mWebView.setVisibility(View.GONE);
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-
-            String html = mSecondCache.getResponseFromDiskCache(mLoadUrl);
-
-            if (TextUtils.isEmpty(html)) {
-                html = mSecondCache.getResponseFromNetwork(mArticle.getUrl());
-            }
-
-            if (!TextUtils.isEmpty(html)) {
-                return html;
-            }
-
-            return null;
-
-        }
-
-        @Override
-        protected void onPostExecute(String html) {
-            super.onPostExecute(html);
-            if (!TextUtils.isEmpty(html)) {
-                mWebView.setVisibility(View.VISIBLE);
-                mWebView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
-            }
-            mProgressBar.setVisibility(View.GONE);
-        }
-    }
 }
