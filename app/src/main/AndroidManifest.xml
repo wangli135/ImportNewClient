@@ -58,8 +58,11 @@
             android:name=".ui.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".ui.MainActivity" />
-
-
+        <activity
+            android:parentActivityName=".ui.ArticleContentActivity"
+            android:name=".ui.ShowPictureActivity"
+            android:label="@string/title_activity_show_picture"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

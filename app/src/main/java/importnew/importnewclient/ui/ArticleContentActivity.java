@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,7 +16,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.regex.Matcher;
@@ -26,12 +25,8 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
+import importnew.importnewclient.view.ProgressWebView;
 import okhttp3.Response;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * 显示文章详情的页面
@@ -45,8 +40,7 @@ public class ArticleContentActivity extends AppCompatActivity {
 
     private Article mArticle;
 
-    private ProgressBar mProgressBar;
-    private WebView mWebView;
+    private ProgressWebView mWebView;
 
     private SecondCache mSecondCache;
 
@@ -64,27 +58,47 @@ public class ArticleContentActivity extends AppCompatActivity {
         mArticle = (Article) getIntent().getParcelableExtra(Constants.Key.ARTICLE);
         mLoadUrl = mArticle.getUrl();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        getSupportActionBar().setTitle(mArticle.getTitle());
         mSecondCache = SecondCache.getInstance(this);
 
         initViews();
 
     }
 
+
+    private View mErrorStub;
+
     private void initViews() {
 
-        mProgressBar = (ProgressBar) findViewById(R.id.article_progressbar);
-        mWebView = (WebView) findViewById(R.id.article_webview);
+        mWebView = (ProgressWebView) findViewById(R.id.article_webview);
         mWebView.setHorizontalScrollBarEnabled(false);
-
+        mWebView.setMyWebChromeClient(new ProgressWebView.MyWebChromeClient() {
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                getSupportActionBar().setTitle(title);
+            }
+        });
         mWebView.setWebViewClient(new WebViewClient() {
+
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                mProgressBar.setVisibility(View.INVISIBLE);
                 view.setVisibility(View.VISIBLE);
             }
 
+            @Override
+            public void onReceivedError(final WebView view, int errorCode, String description, final String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
+                if (mErrorStub == null) {
+                    mErrorStub = ((ViewStub) findViewById(R.id.stub_error)).inflate();
+                    mErrorStub.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            view.loadUrl(mLoadUrl);
+                        }
+                    });
+                }
+            }
 
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
@@ -115,86 +129,24 @@ public class ArticleContentActivity extends AppCompatActivity {
 
                 return super.shouldInterceptRequest(view, url);
             }
-        });
 
-        getArticleContent();
 
-    }
-
-    private View mErrorStub;
-
-    private void getArticleContent() {
-
-        mProgressBar.setVisibility(View.VISIBLE);
-        mWebView.setVisibility(View.INVISIBLE);
-        if (mErrorStub != null)
-            mErrorStub.setVisibility(View.INVISIBLE);
-
-        Observable<String> contentObserver = Observable.create(new Observable.OnSubscribe<String>() {
             @Override
-            public void call(Subscriber<? super String> subscriber) {
-
-                String html = mSecondCache.getResponseFromDiskCache(mLoadUrl);
-
-                if (TextUtils.isEmpty(html)) {
-                    html = mSecondCache.getResponseFromNetwork(mArticle.getUrl());
-                }
-
-                if (TextUtils.isEmpty(html))
-                    subscriber.onError(new Exception("加载文章内容发生错误"));
-                else {
-                    subscriber.onNext(html);
-                    subscriber.onCompleted();
-                }
-
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                Log.i("wangli", "shouldOverrideUrlLoading " + url);
+                if (isPicture(url)) {
+                    //TODO 弹出Activity
+                    Intent intent = new Intent(ArticleContentActivity.this, ShowPictureActivity.class);
+                    intent.putExtra(Constants.Key.PICTURE_URL, url);
+                    startActivity(intent);
+                    return true;
+                } else
+                    return false;
             }
         });
 
-        contentObserver.onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onCompleted() {
+        mWebView.loadUrl(mLoadUrl);
 
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        if (mErrorStub == null) {
-                            ViewStub viewStub = (ViewStub) findViewById(R.id.stub_error);
-                            if (viewStub != null)
-                                mErrorStub = viewStub.inflate();
-                            if (mErrorStub != null)
-                                mErrorStub.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        getArticleContent();
-                                    }
-                                });
-                        } else {
-                            mErrorStub.setVisibility(View.VISIBLE);
-                        }
-
-                        //Toast.makeText(ArticleContentActivity.this, "加载文章内容发生错误", Toast.LENGTH_SHORT).show();
-
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-
-                        mWebView.loadDataWithBaseURL(null, s, "text/html", "UTF-8", mLoadUrl);
-
-                    }
-                });
-
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        mLoadUrl = intent.getStringExtra(Constants.Key.ARTICLE_URL);
-        getArticleContent();
     }
 
     /**
@@ -205,9 +157,24 @@ public class ArticleContentActivity extends AppCompatActivity {
      */
     private boolean isArticleUrl(String url) {
 
-        Pattern pattern = Pattern.compile("http.+((importnew)|(jobbole))\\.com/\\d{2,}+");
+        Pattern pattern = Pattern.compile(Constants.Regex.IS_ARTICLE_URL);
         Matcher matcher = pattern.matcher(url);
         return matcher.find();
+    }
+
+    /**
+     * 是图片的请求
+     *
+     * @param url
+     * @return
+     */
+    private boolean isPicture(String url) {
+
+        Pattern pattern = Pattern.compile(Constants.Regex.IS_PICTURE_URL);
+        Matcher matcher = pattern.matcher(url);
+        return matcher.find();
+
+
     }
 
     @Override

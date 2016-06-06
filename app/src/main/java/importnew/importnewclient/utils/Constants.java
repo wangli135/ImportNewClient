@@ -42,6 +42,8 @@ public class Constants {
         public static final String NUM_OF_FRAGMENT = "num_of_fragment";
 
         public static final String UPDATE_INFO = "updateInfo";
+
+        public static final String PICTURE_URL = "picture_url";
     }
 
 
@@ -147,5 +149,9 @@ public class Constants {
          * 删除文章打赏部分
          */
         public static final String BODY_DELETE_REWARDS = "<blockquote class=\"rewards\".*</blockquote>.*<!-- BEGIN #author-bio -->";
+
+        public static final String IS_ARTICLE_URL = "http.+((importnew)|(jobbole))\\.com/\\d{2,}+";
+
+        public static final String IS_PICTURE_URL = "http.+\\.((png)|(jpg)|(jpeg)|(gif))";
     }
 }

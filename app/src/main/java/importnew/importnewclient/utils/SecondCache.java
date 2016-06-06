@@ -129,9 +129,7 @@ public class SecondCache {
             callSet.add(call);
             Response response = call.execute();
             if (response.isSuccessful()) {
-
                 return response;
-
             } else {
                 return null;
             }
