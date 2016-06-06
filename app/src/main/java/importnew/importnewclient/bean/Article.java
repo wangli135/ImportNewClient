@@ -20,7 +20,7 @@ public class Article implements Parcelable {
     /**
      * 文章图片URL
      */
-    private String imgUrl;
+    private String imgUrl="";
 
     /**
      * 文章标题

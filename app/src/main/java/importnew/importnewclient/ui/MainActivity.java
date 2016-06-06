@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
+import importnew.importnewclient.net.UpdateUtil;
 import importnew.importnewclient.utils.Constants;
 
 
@@ -62,6 +63,19 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         initFragments();
+
+        //检查更新
+        checkUpdate();
+
+    }
+
+    private void checkUpdate() {
+
+        UpdateUtil.AppUpdateInfo appUpdateInfo = (UpdateUtil.AppUpdateInfo) getIntent().getSerializableExtra(Constants.Key.UPDATE_INFO);
+        if (appUpdateInfo == null)
+            return;
+
+        //TODO 显示更新对话框
 
     }
 

@@ -10,13 +10,19 @@
 
     <ProgressBar
         android:id="@+id/article_progressbar"
-        android:layout_centerInParent="true"
         style="@style/Widget.AppCompat.ProgressBar"
         android:layout_width="40dp"
-        android:layout_height="40dp" />
+        android:layout_height="40dp"
+        android:layout_centerInParent="true" />
 
 
-
+    <ViewStub
+        android:id="@+id/stub_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:inflatedId="@+id/error_network_img"
+        android:layout="@layout/error_network_layout" />
 
 
 </RelativeLayout>

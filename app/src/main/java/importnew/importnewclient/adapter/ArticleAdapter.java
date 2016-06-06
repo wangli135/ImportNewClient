@@ -3,7 +3,6 @@ package importnew.importnewclient.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -63,6 +62,8 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         listView.setOnTouchListener(this);
         listView.setOnScrollListener(this);
 
+        mImageLoader.setListView(mListView);
+
     }
 
     @Override
@@ -105,12 +106,11 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         viewHolder.img.setImageResource(R.drawable.emptyview);
         viewHolder.commentNum.setText(article.getCommentNum());
         viewHolder.date.setText(article.getDate());
+        viewHolder.img.setTag(article.getImgUrl());
 
-        if (!TextUtils.isEmpty(article.getImgUrl())) {
-            viewHolder.img.setTag(article.getImgUrl());
-            if (canLoadBitmaps)
-                loadBitmaps(article.getImgUrl(), viewHolder.img);
-        }
+        if (canLoadBitmaps)
+            //mImageLoader.bindBitmap(article.getImgUrl(), viewHolder.img.getWidth(), viewHolder.img.getHeight());
+            loadBitmaps(article.getImgUrl(), viewHolder.img);
 
         return convertView;
     }
@@ -131,6 +131,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             tasks.add(task);
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
         }
+
     }
 
     public void cancelAllTasks() {
@@ -155,6 +156,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             for (int i = mStart; i < mEnd && i < articles.size(); i++) {
                 new BitmapWorkerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, articles.get(i).getImgUrl());
             }
+            notifyDataSetChanged();
 
         } else {
             mVelocityTracker.computeCurrentVelocity(100);

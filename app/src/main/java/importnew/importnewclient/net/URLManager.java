@@ -64,4 +64,9 @@ public class URLManager {
      * 更多频道之Python
      */
     public static final String MORE_PYTHON = "http://python.jobbole.com/all-posts/page/";
+
+    /**
+     * 更新XML地址
+     */
+    public static final String UPDATE_XML_ADDRESS="http://120.27.97.119/ImportNew/update.xml";
 }

@@ -40,6 +40,8 @@ public class Constants {
         public static final String ARTICLE_BASE_URL = "article_base_url";
 
         public static final String NUM_OF_FRAGMENT = "num_of_fragment";
+
+        public static final String UPDATE_INFO = "updateInfo";
     }
 
 

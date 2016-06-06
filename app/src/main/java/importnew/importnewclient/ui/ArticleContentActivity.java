@@ -5,13 +5,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -55,9 +58,9 @@ public class ArticleContentActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_PROGRESS);
         setContentView(R.layout.activity_article_content);
-        //setProgressBarIndeterminate(false);
+        setProgressBarIndeterminate(false);
         mArticle = (Article) getIntent().getParcelableExtra(Constants.Key.ARTICLE);
         mLoadUrl = mArticle.getUrl();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -77,19 +80,49 @@ public class ArticleContentActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
+                Log.d("wangli", newProgress + "");
                 setProgress(newProgress * 100);
             }
 
+        });
 
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mProgressBar.setVisibility(View.INVISIBLE);
+                view.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+                if (isArticleUrl(url)) {
+
+                    view.loadUrl(url);
+//                    Intent intent = new Intent(ArticleContentActivity.this, ArticleContentActivity.class);
+//                    intent.putExtra(Constants.Key.ARTICLE_URL, url);
+//                    startActivity(intent);
+                    return false;
+                }
+
+                return super.shouldOverrideUrlLoading(view, url);
+            }
         });
 
         getArticleContent();
 
     }
 
+    private View mErrorStub;
+
     private void getArticleContent() {
 
         mProgressBar.setVisibility(View.VISIBLE);
+        mWebView.setVisibility(View.INVISIBLE);
+        if (mErrorStub != null)
+            mErrorStub.setVisibility(View.INVISIBLE);
+
         Observable<String> contentObserver = Observable.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
@@ -115,15 +148,28 @@ public class ArticleContentActivity extends AppCompatActivity {
                     @Override
                     public void onCompleted() {
 
-                        mProgressBar.setVisibility(View.INVISIBLE);
-
                     }
 
                     @Override
                     public void onError(Throwable e) {
 
                         mProgressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(ArticleContentActivity.this, "加载文章内容发生错误", Toast.LENGTH_SHORT).show();
+                        if (mErrorStub == null) {
+                            ViewStub viewStub = (ViewStub) findViewById(R.id.stub_error);
+                            if (viewStub != null)
+                                mErrorStub = viewStub.inflate();
+                            if (mErrorStub != null)
+                                mErrorStub.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        getArticleContent();
+                                    }
+                                });
+                        } else {
+                            mErrorStub.setVisibility(View.VISIBLE);
+                        }
+
+                        //Toast.makeText(ArticleContentActivity.this, "加载文章内容发生错误", Toast.LENGTH_SHORT).show();
 
                     }
 
@@ -158,7 +204,20 @@ public class ArticleContentActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        mWebView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mWebView.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
+        mWebView.stopLoading();
         super.onDestroy();
     }
 
