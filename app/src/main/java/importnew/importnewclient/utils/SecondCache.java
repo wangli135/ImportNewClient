@@ -120,9 +120,26 @@ public class SecondCache {
     }
 
 
+    public Response getResponse(String url) {
+        try {
+            Request request = new Request.Builder().url(url).cacheControl(
+                    new CacheControl.Builder().noCache().build()
+            ).build();
+            Call call = httpClient.newCall(request);
+            callSet.add(call);
+            Response response = call.execute();
+            if (response.isSuccessful()) {
 
+                return response;
 
-
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
 }

@@ -1,18 +1,19 @@
 package importnew.importnewclient.ui;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewStub;
-import android.view.Window;
-import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -25,6 +26,7 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
+import okhttp3.Response;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -58,9 +60,7 @@ public class ArticleContentActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_PROGRESS);
         setContentView(R.layout.activity_article_content);
-        setProgressBarIndeterminate(false);
         mArticle = (Article) getIntent().getParcelableExtra(Constants.Key.ARTICLE);
         mLoadUrl = mArticle.getUrl();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -76,15 +76,6 @@ public class ArticleContentActivity extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.article_progressbar);
         mWebView = (WebView) findViewById(R.id.article_webview);
         mWebView.setHorizontalScrollBarEnabled(false);
-        mWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-                Log.d("wangli", newProgress + "");
-                setProgress(newProgress * 100);
-            }
-
-        });
 
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -94,19 +85,35 @@ public class ArticleContentActivity extends AppCompatActivity {
                 view.setVisibility(View.VISIBLE);
             }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+
+                String url = request.getUrl().toString();
                 if (isArticleUrl(url)) {
 
-                    view.loadUrl(url);
-//                    Intent intent = new Intent(ArticleContentActivity.this, ArticleContentActivity.class);
-//                    intent.putExtra(Constants.Key.ARTICLE_URL, url);
-//                    startActivity(intent);
-                    return false;
+                    Response httpResponse = mSecondCache.getResponse(url);
+                    WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
+                    httpResponse.body().close();
+                    return webResourceResponse;
                 }
 
-                return super.shouldOverrideUrlLoading(view, url);
+                return super.shouldInterceptRequest(view, request);
+            }
+
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                if (isArticleUrl(url)) {
+
+                    Response httpResponse = mSecondCache.getResponse(url);
+                    WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
+                    httpResponse.body().close();
+                    return webResourceResponse;
+                }
+
+                return super.shouldInterceptRequest(view, url);
             }
         });
 
@@ -176,7 +183,7 @@ public class ArticleContentActivity extends AppCompatActivity {
                     @Override
                     public void onNext(String s) {
 
-                        mWebView.loadDataWithBaseURL(null, s, "text/html", "UTF-8", null);
+                        mWebView.loadDataWithBaseURL(null, s, "text/html", "UTF-8", mLoadUrl);
 
                     }
                 });
