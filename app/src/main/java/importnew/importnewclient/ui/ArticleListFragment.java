@@ -1,12 +1,16 @@
 package importnew.importnewclient.ui;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +40,8 @@ import rx.schedulers.Schedulers;
  */
 public class ArticleListFragment extends BaseFragment implements ListView.OnItemClickListener {
 
+    private String TAG = "ArticleListFragment";
+
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LoadMoreListView mListView;
 
@@ -54,17 +60,29 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
      */
     private int pageNum = 1;
 
+    private int selection;//ListView选中Item位置
+
     public ArticleListFragment() {
     }
+
+    private BroadcastReceiver myReceiver;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             category = (String) savedInstanceState.get(Constants.Key.ARTICLE_BASE_URL);
+            selection = (Integer) savedInstanceState.get(Constants.Key.SELECTION);
             mArticles = savedInstanceState.getParcelableArrayList(Constants.Key.ARTICLE_LIST);
             pageNum = savedInstanceState.getInt(Constants.Key.PAGE_NUM);
-        } else pageNum = 1;
+        } else {
+            pageNum = 1;
+            selection = 0;
+            mArticles = null;
+        }
+        IntentFilter intentFilter = new IntentFilter("com.importnew.listview.selection");
+        myReceiver = new ListViewSelectionReceiver();
+        mContext.registerReceiver(myReceiver, intentFilter);
     }
 
     public static ArticleListFragment newInstance(String baseurl) {
@@ -84,6 +102,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.i(TAG + category, "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.article_swiperefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
@@ -110,12 +129,14 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         });
 
         mSecondCache = SecondCache.getInstance(getContext());
-        mArticles = new ArrayList<>();
+        if (mArticles == null) {
+            mArticles = new ArrayList<>();
+        }
         mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
         mListView.setAdapter(mAdapter);
+        mListView.setSelection(selection);
         mSwipeRefreshLayout.setRefreshing(true);
         loadArticles();
-
 
     }
 
@@ -183,7 +204,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         super.onPause();
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
-
     }
 
     @Override
@@ -198,6 +218,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(Constants.Key.ARTICLE_BASE_URL, category);
         outState.putParcelableArrayList(Constants.Key.ARTICLE_LIST, mArticles);
+        outState.putInt(Constants.Key.SELECTION, mListView.getSelectedItemPosition());
         outState.putInt(Constants.Key.PAGE_NUM, pageNum);
         super.onSaveInstanceState(outState);
 
@@ -284,5 +305,16 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     }
 
+
+    class ListViewSelectionReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().equals("com.importnew.listview.selection") && mListView != null) {
+                mListView.setSelection(0);
+            }
+
+        }
+    }
 
 }

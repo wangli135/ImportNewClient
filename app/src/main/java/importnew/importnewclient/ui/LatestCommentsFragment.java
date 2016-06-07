@@ -4,7 +4,6 @@ package importnew.importnewclient.ui;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -22,7 +21,6 @@ import importnew.importnewclient.adapter.HotArticleAdapter;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HotArticlesParser;
-import importnew.importnewclient.view.DividerItemDecoration;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -71,8 +69,8 @@ public class LatestCommentsFragment extends BaseFragment {
         mAdapter = new HotArticleAdapter(getActivity(), mArticles);
         layoutManager = new LinearLayoutManager(getActivity());
         mRecycleView.setLayoutManager(layoutManager);
-        mRecycleView.setItemAnimator(new DefaultItemAnimator());
-        mRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
+//        mRecycleView.setItemAnimator(new DefaultItemAnimator());
+//        mRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
 
         mRecycleView.setAdapter(mAdapter);
 

@@ -140,8 +140,11 @@ public class ArticleContentActivity extends AppCompatActivity {
                     intent.putExtra(Constants.Key.PICTURE_URL, url);
                     startActivity(intent);
                     return true;
-                } else
+                } else {
+//                    Intent intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//                    startActivity(intent);
                     return false;
+                }
             }
         });
 

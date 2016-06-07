@@ -14,13 +14,16 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.ImageLoader;
+import rx.Subscriber;
 
 
 /**
@@ -48,6 +51,8 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     private int mStart;
     private int mEnd;
 
+    //生产者集合
+    private Map<String, Subscriber> mTaskMap;
 
     public ArticleAdapter(Context context, List<Article> articles, ListView listView) {
         this.articles = articles;
@@ -63,6 +68,8 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         listView.setOnScrollListener(this);
 
         mImageLoader.setListView(mListView);
+
+        mTaskMap = new HashMap<>();
 
     }
 
@@ -115,7 +122,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         return convertView;
     }
 
-    private void loadBitmaps(String url, final ImageView imageView) {
+    private void loadBitmaps(final String url, final ImageView imageView) {
 
         if (url == null) {
             imageView.setVisibility(View.GONE);
@@ -132,12 +139,59 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
         }
 
+
+       /* if (TextUtils.isEmpty(url))
+            return;
+        Observable<Bitmap> observable = Observable.create(new Observable.OnSubscribe<Bitmap>() {
+            @Override
+            public void call(Subscriber<? super Bitmap> subscriber) {
+
+                Bitmap bitmap = mImageLoader.getBitmapFromMemory(url);
+                if (bitmap != null) {
+                    subscriber.onNext(bitmap);
+                    subscriber.onCompleted();
+                }
+
+                bitmap = mImageLoader.getBitmap(url);
+                if (bitmap != null) {
+                    subscriber.onNext(bitmap);
+                    subscriber.onCompleted();
+                }
+
+                subscriber.onError(new NullPointerException("Bitmap为空"));
+
+            }
+        });
+
+
+        observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Bitmap>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (imageView != null)
+                            imageView.setImageResource(R.drawable.emptyview);
+                    }
+
+                    @Override
+                    public void onNext(Bitmap bitmap) {
+                        if (imageView != null && bitmap != null)
+                            imageView.setImageBitmap(bitmap);
+                    }
+                });*/
     }
 
     public void cancelAllTasks() {
+
         for (BitmapWorkerTask task : tasks) {
-            task.cancel(true);
+            if (!task.isCancelled())
+                task.cancel(true);
         }
+
     }
 
 
@@ -153,9 +207,9 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         if (scrollState == SCROLL_STATE_IDLE) {
 
             canLoadBitmaps = true;
-            for (int i = mStart; i < mEnd && i < articles.size(); i++) {
-                new BitmapWorkerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, articles.get(i).getImgUrl());
-            }
+//            for (int i = mStart; i < mEnd && i < articles.size(); i++) {
+//                new BitmapWorkerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, articles.get(i).getImgUrl());
+//            }
             notifyDataSetChanged();
 
         } else {

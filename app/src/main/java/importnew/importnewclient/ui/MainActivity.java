@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import importnew.importnewclient.R;
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity
      */
     private int numOfFragment;
 
+    private long lastClickAppBarTime;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +53,19 @@ public class MainActivity extends AppCompatActivity
         }
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //双击列表返回顶部
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (System.currentTimeMillis() - lastBackTime < 2000) {
+                        Intent intent = new Intent("com.importnew.listview.selection");
+                        sendBroadcast(intent);
+                }
+
+                lastBackTime = System.currentTimeMillis();
+            }
+        });
         setSupportActionBar(toolbar);
 
 

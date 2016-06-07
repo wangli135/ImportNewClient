@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import importnew.importnewclient.R;
+import importnew.importnewclient.utils.DisplayUtil;
 
 /**
  * Created by Xingfeng on 2016/6/6.
@@ -26,7 +27,7 @@ public class ProgressWebView extends WebView {
         mProgressBar = new ProgressBar(context, null,
                 android.R.attr.progressBarStyleHorizontal);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 12);
+                LinearLayout.LayoutParams.MATCH_PARENT, DisplayUtil.dp2sp(context, 4));
         mProgressBar.setLayoutParams(layoutParams);
 
         Drawable drawable = context.getResources().getDrawable(

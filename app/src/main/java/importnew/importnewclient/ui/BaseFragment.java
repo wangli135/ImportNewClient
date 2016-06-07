@@ -27,11 +27,6 @@ public class BaseFragment extends Fragment {
         mSecondCache=SecondCache.getInstance(context);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
 
 
 }

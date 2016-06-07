@@ -62,7 +62,24 @@ public class ImageResizer {
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(in, null, options);
+        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
+        return bitmap;
+    }
+
+    public Bitmap decodeSampledBitmapFromByteArray(byte[] array, int reqWidth, int reqHeight) {
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(array, reqHeight, reqWidth, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth,
+                reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeByteArray(array, reqHeight, reqWidth, options);
+        return bitmap;
     }
 
     public int calculateInSampleSize(BitmapFactory.Options options,

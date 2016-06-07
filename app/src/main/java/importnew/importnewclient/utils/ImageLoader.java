@@ -99,6 +99,8 @@ public class ImageLoader {
         //硬盘+网络缓存
         mHttpClient = HttpManager.getInstance(context).getClient();
 
+        imageResizer = new ImageResizer();
+
     }
 
     public static ImageLoader getInstance(Context context) {
@@ -199,6 +201,9 @@ public class ImageLoader {
         return mMemoryCache.get(imageUrl);
     }
 
+
+    private ImageResizer imageResizer;
+
     /**
      * 从硬盘或者网络中同步获取图片
      *
@@ -216,7 +221,8 @@ public class ImageLoader {
         try {
             Request request = new Request.Builder().url(imageUrl).build();
             response = mHttpClient.newCall(request).execute();
-            bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+            if (response.isSuccessful())
+                bitmap = BitmapFactory.decodeStream(response.body().byteStream());
 
             //将图片添加到内存中
             if (bitmap != null)
