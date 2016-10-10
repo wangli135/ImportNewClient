@@ -11,6 +11,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,8 +42,6 @@ public class MainActivity extends AppCompatActivity
      */
     private int numOfFragment;
 
-    private long lastClickAppBarTime;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,8 +58,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
 
                 if (System.currentTimeMillis() - lastBackTime < 2000) {
-                        Intent intent = new Intent("com.importnew.listview.selection");
-                        sendBroadcast(intent);
+                    Intent intent = new Intent("com.importnew.listview.selection");
+                    sendBroadcast(intent);
                 }
 
                 lastBackTime = System.currentTimeMillis();
@@ -114,7 +113,7 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        toolbar.setTitle(choicesId[numOfFragment]);
+        getSupportActionBar().setTitle(choicesId[numOfFragment]);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_contents, mFragment).commit();
     }
 
@@ -162,12 +161,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
 
             Intent intent = new Intent(this, SearchActivity.class);
@@ -180,7 +175,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         FragmentManager manager = getSupportFragmentManager();
@@ -221,6 +215,14 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(this, SettingsActivity.class));
 
         } else if (id == R.id.menu_mode) {
+
+            int mode = AppCompatDelegate.getDefaultNightMode();
+            if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            } else if (mode == AppCompatDelegate.MODE_NIGHT_NO) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            }
+            recreate();
 
         }
 

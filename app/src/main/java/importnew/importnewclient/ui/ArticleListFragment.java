@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,8 +38,6 @@ import rx.schedulers.Schedulers;
  * A simple {@link Fragment} subclass.
  */
 public class ArticleListFragment extends BaseFragment implements ListView.OnItemClickListener {
-
-    private String TAG = "ArticleListFragment";
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LoadMoreListView mListView;
@@ -102,7 +99,6 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Log.i(TAG + category, "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.article_swiperefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
@@ -204,6 +200,8 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         super.onPause();
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
+        if (mAdapter != null)
+            mAdapter.cancelAllTasks();
     }
 
     @Override
@@ -211,6 +209,8 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         super.onDestroy();
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
+        if (myReceiver != null)
+            mContext.unregisterReceiver(myReceiver);
         mAdapter.cancelAllTasks();
     }
 

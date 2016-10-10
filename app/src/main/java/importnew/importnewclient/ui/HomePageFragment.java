@@ -18,7 +18,6 @@ import java.util.List;
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.HomePageAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
-import importnew.importnewclient.net.RefreshWorker;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.HomePagerParser;
 import importnew.importnewclient.utils.ArctileBlockConverter;
@@ -100,33 +99,6 @@ public class HomePageFragment extends BaseFragment {
         }
 
 
-    }
-
-    /**
-     * 刷新页面
-     */
-    private void refreshHomePage() {
-
-        new RefreshWorker(new RefreshWorker.OnRefreshListener() {
-            @Override
-            public void onRefresh(String html) {
-
-                if (!TextUtils.isEmpty(html)) {
-
-                    articles.clear();
-                    articles.addAll(ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html)));
-                }
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mHomePageAdapter.notifyDataSetChanged();
-                        mRefreshLayout.setRefreshing(false);
-                    }
-                });
-
-            }
-        }, mSecondCache, URLManager.HOMEPAGE);
     }
 
     /**

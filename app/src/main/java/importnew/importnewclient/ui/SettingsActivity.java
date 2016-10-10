@@ -37,5 +37,4 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.preferences);
         }
     }
-
 }

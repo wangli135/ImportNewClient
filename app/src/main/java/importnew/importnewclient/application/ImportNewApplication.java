@@ -1,7 +1,10 @@
 package importnew.importnewclient.application;
 
 import android.app.Application;
+import android.support.v7.app.AppCompatDelegate;
 import android.util.DisplayMetrics;
+
+import com.squareup.leakcanary.LeakCanary;
 
 import im.fir.sdk.FIR;
 
@@ -20,11 +23,15 @@ public class ImportNewApplication extends Application {
      */
     public static int SCREEN_HEIGHT;
 
+    static {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
-        //初始化BUGHD SDK
         FIR.init(this);
+        LeakCanary.install(this);
         getWidthAndHeight();
 
     }

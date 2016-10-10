@@ -29,13 +29,6 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-//        findViewById(android.R.id.content).postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                checkUpdate();
-//            }
-//        }, 1000);
-
         checkUpdate();
 
     }
@@ -70,6 +63,7 @@ public class SplashActivity extends AppCompatActivity {
             public void onError(Throwable e) {
                 Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
 
             @Override

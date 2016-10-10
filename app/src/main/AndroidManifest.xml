@@ -50,18 +50,18 @@
                 android:resource="@xml/searchable" />
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/action_settings"></activity>
+
         <meta-data
             android:name="BUG_HD_SDK_GENERAL_KEY"
             android:value="905a552f3ef36b3be88981b5b45a2fc6" />
 
         <activity
-            android:name=".ui.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".ui.MainActivity" />
-        <activity
-            android:parentActivityName=".ui.ArticleContentActivity"
             android:name=".ui.ShowPictureActivity"
             android:label="@string/title_activity_show_picture"
+            android:parentActivityName=".ui.ArticleContentActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

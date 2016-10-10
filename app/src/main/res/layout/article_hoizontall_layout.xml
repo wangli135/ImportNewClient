@@ -4,7 +4,9 @@
     android:layout_height="116dp"
     android:layout_margin="5dp"
     android:paddingLeft="5dp"
-    android:paddingRight="5dp">
+    android:paddingRight="5dp"
+    android:background="@color/colorBackground"
+    >
 
     <TextView
         android:id="@+id/article_title"
@@ -17,12 +19,12 @@
         android:textSize="13sp" />
 
     <ImageView
-        android:src="@drawable/emptyview"
         android:id="@+id/article_img"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_below="@id/article_title"
-        android:layout_marginTop="3dp" />
+        android:layout_marginTop="3dp"
+        android:src="@drawable/emptyview" />
 
     <TextView
         android:id="@+id/article_desc"
@@ -39,21 +41,21 @@
         android:textSize="12sp" />
 
     <TextView
-        android:layout_alignRight="@id/article_desc"
         android:id="@+id/article_comment_num"
         android:layout_width="wrap_content"
         android:layout_height="16dp"
+        android:layout_alignRight="@id/article_desc"
         android:layout_below="@id/article_img"
         android:layout_marginTop="3dp"
         android:gravity="center_vertical"
         android:textSize="10sp" />
 
     <TextView
-        android:layout_marginRight="8dp"
         android:id="@+id/article_date"
         android:layout_width="wrap_content"
         android:layout_height="16dp"
         android:layout_below="@id/article_img"
+        android:layout_marginRight="8dp"
         android:layout_marginTop="3dp"
         android:layout_toLeftOf="@id/article_comment_num"
         android:gravity="center_vertical"

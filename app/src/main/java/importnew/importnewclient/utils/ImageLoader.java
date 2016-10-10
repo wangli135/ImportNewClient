@@ -155,7 +155,7 @@ public class ImageLoader {
         THREAD_POOL_EXECUTOR.execute(loadBitmapTask);
     }
 
-    private Bitmap loadBitmap(String url, int reqWidth, int reqHeight) {
+    public Bitmap loadBitmap(String url, int reqWidth, int reqHeight) {
 
         Bitmap bitmap = getBitmapFromMemory(url);
         if (bitmap != null) {

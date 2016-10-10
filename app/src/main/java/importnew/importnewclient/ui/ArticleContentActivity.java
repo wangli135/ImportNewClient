@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -133,16 +132,12 @@ public class ArticleContentActivity extends AppCompatActivity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                Log.i("wangli", "shouldOverrideUrlLoading " + url);
                 if (isPicture(url)) {
-                    //TODO 弹出Activity
                     Intent intent = new Intent(ArticleContentActivity.this, ShowPictureActivity.class);
                     intent.putExtra(Constants.Key.PICTURE_URL, url);
                     startActivity(intent);
                     return true;
                 } else {
-//                    Intent intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//                    startActivity(intent);
                     return false;
                 }
             }
@@ -256,6 +251,12 @@ public class ArticleContentActivity extends AppCompatActivity {
             break;
 
             case android.R.id.home:
+
+                if (mWebView != null && mWebView.canGoBack()) {
+                    mWebView.goBack();
+                    break;
+                }
+
                 Intent intent = new Intent();
                 mArticle.setFavourite(isFavourite);
                 intent.putExtra(Constants.Key.ARTICLE, mArticle);

@@ -97,7 +97,6 @@ public class Constants {
         public static final String LIST_ARTICLES_URL = "href=\".+?\"";
         public static final String LIST_ARTICLES_TITLE = "title=\\\".*\\\">";
         public static final String LIST_ARTICLES_IMG = "src=\".+?(\")";
-        //public static final String LIST_ARTICLES_IMG = "src.*\\.((jpg)|(png)|(gif)|(jpeg))\"";
         public static final String LIST_ARTICLES_COMMENT_DATE = "<p><a.*?</p>";
         public static final String LIST_ARTICLES_DATE = "\\d{4}/\\d{1,2}/\\d{1,2}";
         public static final String LIST_ARTICLES_COMMENT = "\\d+ 条评论";
@@ -152,8 +151,14 @@ public class Constants {
          */
         public static final String BODY_DELETE_REWARDS = "<blockquote class=\"rewards\".*</blockquote>.*<!-- BEGIN #author-bio -->";
 
+        /**
+         * ImportNew文章标识
+         */
         public static final String IS_ARTICLE_URL = "http.+((importnew)|(jobbole))\\.com/\\d{2,}+";
 
+        /**
+         * ImportNew图片标识
+         */
         public static final String IS_PICTURE_URL = "http.+\\.((png)|(jpg)|(jpeg)|(gif))";
     }
 }
