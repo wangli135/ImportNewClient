@@ -2,7 +2,6 @@ package importnew.importnewclient.parser;
 
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,8 +112,6 @@ public class ArticleBodyParser {
         }
 
         sb.append(left);
-
-        Log.i("wangli", sb.toString());
 
         return sb.toString();
     }

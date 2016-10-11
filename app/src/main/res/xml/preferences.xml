@@ -12,9 +12,8 @@
 
         <SwitchPreference
             android:defaultValue="false"
-            android:key="day_light_mode"
-            android:summary="根据时间切换白天、夜间模式"
-            android:title="自动切换主题"></SwitchPreference>
+            android:key="day_night_mode"
+            android:title="@string/night_mode"></SwitchPreference>
 
     </PreferenceCategory>
 
@@ -31,7 +30,7 @@
 
 
         <Preference
-            android:summary="当前版本1.0"
+            android:summary="当前版本1.0.0"
             android:title="检查更新"></Preference>
 
     </PreferenceCategory>

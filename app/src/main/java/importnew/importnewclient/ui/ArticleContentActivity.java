@@ -15,7 +15,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,11 +41,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     private ProgressWebView mWebView;
 
     private SecondCache mSecondCache;
-
-    /**
-     * 是否收藏
-     */
-    private boolean isFavourite;
 
     private boolean canShare = false;
 
@@ -208,13 +202,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_article_content_menu, menu);
-        MenuItem menuItem = menu.findItem(R.id.menu_favourite);
-        if (isFavourite)
-            menuItem.setIcon(R.drawable.ic_menu_favorite_red);
-        else
-            menuItem.setIcon(R.drawable.ic_menu_favorite_white);
-
-
         return true;
     }
 
@@ -222,19 +209,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.menu_favourite: {
-
-                isFavourite = !isFavourite;
-                if (isFavourite) {
-                    item.setIcon(R.drawable.ic_menu_favorite_red);
-                    Toast.makeText(this, R.string.favourite_success, Toast.LENGTH_SHORT).show();
-                } else {
-                    item.setIcon(R.drawable.ic_menu_favorite_white);
-                    Toast.makeText(this, R.string.cancel_favourite, Toast.LENGTH_SHORT).show();
-                }
-
-            }
-            break;
             case R.id.action_share: {
 
                 if (!canShare) {
@@ -258,7 +232,6 @@ public class ArticleContentActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent();
-                mArticle.setFavourite(isFavourite);
                 intent.putExtra(Constants.Key.ARTICLE, mArticle);
                 setResult(Activity.RESULT_OK, intent);
                 finish();

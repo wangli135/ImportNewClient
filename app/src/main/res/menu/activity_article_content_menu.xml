@@ -3,12 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_favourite"
-        android:icon="@drawable/ic_menu_favorite_white"
-        android:title="@string/favourite"
-        app:showAsAction="collapseActionView|ifRoom"></item>
-
-    <item
         android:id="@+id/action_share"
         android:title="@string/share"
         android:icon="@drawable/ic_menu_share_white"

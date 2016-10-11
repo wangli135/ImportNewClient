@@ -1,7 +1,6 @@
 package importnew.importnewclient.application;
 
 import android.app.Application;
-import android.support.v7.app.AppCompatDelegate;
 import android.util.DisplayMetrics;
 
 import com.squareup.leakcanary.LeakCanary;
@@ -22,10 +21,6 @@ public class ImportNewApplication extends Application {
      * 屏幕高度，单位像素
      */
     public static int SCREEN_HEIGHT;
-
-    static {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-    }
 
     @Override
     public void onCreate() {

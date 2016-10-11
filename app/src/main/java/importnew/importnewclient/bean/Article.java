@@ -40,7 +40,6 @@ public class Article implements Parcelable {
         desc = in.readString();
         commentNum = in.readString();
         date = in.readString();
-        isFavourite = in.readByte() != 0;
     }
 
     @Override
@@ -51,7 +50,6 @@ public class Article implements Parcelable {
         dest.writeString(desc);
         dest.writeString(commentNum);
         dest.writeString(date);
-        dest.writeByte((byte) (isFavourite ? 1 : 0));
     }
 
     @Override
@@ -82,23 +80,16 @@ public class Article implements Parcelable {
      */
     private String date;
 
-    /**
-     * 是否是收藏的文章
-     */
-    private boolean isFavourite;
-
-
     public Article() {
     }
 
-    public Article(String url, String imgUrl, String title, String desc, String commentNum, String date, boolean isFavourite) {
+    public Article(String url, String imgUrl, String title, String desc, String commentNum, String date) {
         this.url = url;
         this.imgUrl = imgUrl;
         this.title = title;
         this.desc = desc;
         this.commentNum = commentNum;
         this.date = date;
-        this.isFavourite = isFavourite;
     }
 
     public String getUrl() {
@@ -162,14 +153,6 @@ public class Article implements Parcelable {
         this.date = date;
     }
 
-    public boolean isFavourite() {
-        return isFavourite;
-    }
-
-    public void setFavourite(boolean favourite) {
-        isFavourite = favourite;
-    }
-
     /**
      * 两篇文章的URL相同，则认为文章相等
      *
@@ -197,7 +180,6 @@ public class Article implements Parcelable {
                 ", desc='" + desc + '\'' +
                 ", commentNum=" + commentNum +
                 ", date='" + date + '\'' +
-                ", isFavourite=" + isFavourite +
                 '}';
     }
 

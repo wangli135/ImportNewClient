@@ -55,7 +55,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         articleList = mArticleBlock.getArticles();
 
         taskCollection = new HashSet<>();
-        mImageLoader = ImageLoader.getInstance(context);
+        mImageLoader = ImageLoader.getInstance(context.getApplicationContext());
         listView.setOnItemClickListener(this);
     }
 

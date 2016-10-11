@@ -84,6 +84,17 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onResume() {
+        int mode = AppCompatDelegate.getDefaultNightMode();
+        if (mode == AppCompatDelegate.MODE_NIGHT_NO) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        super.onResume();
+    }
+
     private void checkUpdate() {
 
         UpdateUtil.AppUpdateInfo appUpdateInfo = (UpdateUtil.AppUpdateInfo) getIntent().getSerializableExtra(Constants.Key.UPDATE_INFO);
@@ -213,16 +224,6 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.menu_settings) {
 
             startActivity(new Intent(this, SettingsActivity.class));
-
-        } else if (id == R.id.menu_mode) {
-
-            int mode = AppCompatDelegate.getDefaultNightMode();
-            if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            } else if (mode == AppCompatDelegate.MODE_NIGHT_NO) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            }
-            recreate();
 
         }
 

@@ -52,7 +52,7 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         this.articles = articles;
         mContext = context;
         mInflater = LayoutInflater.from(context);
-        mImageLoader = ImageLoader.getInstance(context);
+        mImageLoader = ImageLoader.getInstance(context.getApplicationContext());
         tasks = new HashSet<>();
 
         mVelocityTracker = VelocityTracker.obtain();
