@@ -1,7 +1,6 @@
 
 package importnew.importnewclient.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -18,13 +17,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import importnew.importnewclient.R;
-import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.net.UpdateUtil;
 import importnew.importnewclient.utils.Constants;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, BaseFragment.OnArticleSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener{
 
     private int[] choicesId = {R.string.homepage, R.string.all_artciles, R.string.hot_articles, R.string.more_contents};
 
@@ -33,8 +30,6 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout drawer;
 
     private Fragment mFragment;
-
-    private Article selectedArticle;
 
     /**
      * 正在显示的Fragment
@@ -78,19 +73,6 @@ public class MainActivity extends AppCompatActivity
 
         initFragments();
 
-        //检查更新
-        checkUpdate();
-
-    }
-
-    private void checkUpdate() {
-
-        UpdateUtil.AppUpdateInfo appUpdateInfo = (UpdateUtil.AppUpdateInfo) getIntent().getSerializableExtra(Constants.Key.UPDATE_INFO);
-        if (appUpdateInfo == null)
-            return;
-
-        //TODO 显示更新对话框
-
     }
 
     private void initFragments() {
@@ -115,24 +97,6 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle(choicesId[numOfFragment]);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_contents, mFragment).commit();
     }
-
-    @Override
-    public void onArticleSelectedListener(Article article) {
-
-        selectedArticle = article;
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.Code.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-
-            selectedArticle = data.getParcelableExtra(Constants.Key.ARTICLE);
-
-        }
-    }
-
 
     private long lastBackTime;
 
@@ -209,10 +173,6 @@ public class MainActivity extends AppCompatActivity
                 mFragment = new MoreContentsFragment();
             manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
             numOfFragment = 3;
-        } else if (id == R.id.menu_settings) {
-
-            startActivity(new Intent(this, SettingsActivity.class));
-
         }
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewStub;
@@ -41,8 +40,6 @@ public class ArticleContentActivity extends AppCompatActivity {
     private ProgressWebView mWebView;
 
     private SecondCache mSecondCache;
-
-    private boolean canShare = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -206,30 +203,9 @@ public class ArticleContentActivity extends AppCompatActivity {
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_article_content_menu, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_share: {
-
-                if (!canShare) {
-                    return true;
-                }
-
-                Intent share = new Intent(Intent.ACTION_SEND);
-                share.setType("text/plain");
-                share.putExtra(Intent.EXTRA_TITLE, mArticle.getTitle());
-                share.putExtra(Intent.EXTRA_TEXT, mArticle.getDesc());
-                share.putExtra(Intent.EXTRA_HTML_TEXT, mArticle.getUrl());
-                startActivity(Intent.createChooser(share, "Share"));
-            }
-            break;
-
             case android.R.id.home:
 
                 if (mWebView != null && mWebView.canGoBack()) {

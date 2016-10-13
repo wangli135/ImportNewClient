@@ -22,7 +22,6 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.ui.ArticleContentActivity;
-import importnew.importnewclient.ui.BaseFragment;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.ImageLoader;
 
@@ -132,11 +131,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         intent.putExtra(Constants.Key.ARTICLE, article);
 
         Activity activity = (Activity) mContext;
-
-        if (activity instanceof BaseFragment.OnArticleSelectedListener)
-            ((BaseFragment.OnArticleSelectedListener) activity).onArticleSelectedListener(article);
-
-        activity.startActivityForResult(intent, Constants.Code.REQUEST_CODE);
+        activity.startActivity(intent);
 
     }
 

@@ -297,11 +297,7 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         Article article = mArticles.get(position);
         Intent intent = new Intent(getParentFragment().getActivity(), ArticleContentActivity.class);
         intent.putExtra(Constants.Key.ARTICLE, article);
-
-        if (getActivity() instanceof BaseFragment.OnArticleSelectedListener)
-            ((OnArticleSelectedListener) getActivity()).onArticleSelectedListener(article);
-
-        getActivity().startActivityForResult(intent, Constants.Code.REQUEST_CODE);
+        getActivity().startActivity(intent);
 
     }
 

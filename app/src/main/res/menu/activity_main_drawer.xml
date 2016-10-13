@@ -20,15 +20,4 @@
             android:title="@string/more_contents" />
     </group>
 
-
-     <item android:title="">
-         <menu>
-
-             <item
-                 android:id="@+id/menu_settings"
-                 android:icon="@drawable/ic_menu_settings"
-                 android:title="@string/action_settings" />
-         </menu>
-     </item>
-
 </menu>

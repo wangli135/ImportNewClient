@@ -3,7 +3,6 @@ package importnew.importnewclient.ui;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
-import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.SecondCache;
 
 /**
@@ -11,12 +10,6 @@ import importnew.importnewclient.utils.SecondCache;
  */
 public class BaseFragment extends Fragment {
 
-    public interface OnArticleSelectedListener{
-        void onArticleSelectedListener(Article article);
-    }
-
-
-    protected OnArticleSelectedListener onArticleSelectedListener;
     protected Context mContext;
     protected SecondCache mSecondCache;
 

@@ -14,7 +14,6 @@ import java.util.List;
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.ui.ArticleContentActivity;
-import importnew.importnewclient.ui.BaseFragment;
 import importnew.importnewclient.utils.Constants;
 
 /**
@@ -91,10 +90,7 @@ public class HotArticleAdapter extends RecyclerView.Adapter<HotArticleAdapter.Ho
             if (activity == null)
                 return;
 
-            if (activity instanceof BaseFragment.OnArticleSelectedListener)
-                ((BaseFragment.OnArticleSelectedListener) activity).onArticleSelectedListener(getArticle());
-
-            activity.startActivityForResult(intent, Constants.Code.REQUEST_CODE);
+            activity.startActivity(intent);
 
 
         }
