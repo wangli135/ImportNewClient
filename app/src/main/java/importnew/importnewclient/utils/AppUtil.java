@@ -3,6 +3,8 @@ package importnew.importnewclient.utils;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 
 import java.io.File;
@@ -22,14 +24,14 @@ public class AppUtil {
      */
     public static File getDiskCacheDir(Context context, String filename) {
 
-        boolean externalStorageAvailable=Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        boolean externalStorageAvailable = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
 
         String cachePath;
 
-        if(externalStorageAvailable){
-            cachePath=context.getExternalCacheDir().getPath();
-        }else{
-            cachePath=context.getCacheDir().getPath();
+        if (externalStorageAvailable) {
+            cachePath = context.getExternalCacheDir().getPath();
+        } else {
+            cachePath = context.getCacheDir().getPath();
         }
 
         return new File(cachePath + File.separator + filename);
@@ -49,6 +51,22 @@ public class AppUtil {
             e.printStackTrace();
         }
         return 1;
+    }
+
+    /**
+     * 判断网络是否处于Wifi状态
+     *
+     * @return
+     */
+    public static boolean isWifi(Context context) {
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        if (activeNetworkInfo != null && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+            return true;
+        else
+            return false;
+
     }
 
 }

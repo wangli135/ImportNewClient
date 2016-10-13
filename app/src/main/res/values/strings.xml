@@ -109,4 +109,5 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_show_picture">图片显示</string>
     <string name="night_mode">夜间模式</string>
+    <string name="search_result">结果</string>
 </resources>

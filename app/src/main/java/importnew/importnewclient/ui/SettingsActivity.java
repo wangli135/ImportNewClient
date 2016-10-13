@@ -3,24 +3,86 @@ package importnew.importnewclient.ui;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.Switch;
+import android.widget.TextView;
 
 import importnew.importnewclient.R;
+import importnew.importnewclient.utils.Constants;
 
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+
+    private Switch saveFlowSwitch;
+    private TextView feadBackTv;
+    private LinearLayout checkUpdateLl;
+    private TextView abountTv;
+
+    private SharedPreferences sharedPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.settings);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction().add(R.id.container, SettingsFragment.getInstance()).commit();
+        sharedPreferences = getPreferences(MODE_PRIVATE);
+
+        initViews();
+        initListeners();
+    }
+
+    private void initViews() {
+
+        saveFlowSwitch = (Switch) findViewById(R.id.save_flow_switch);
+        saveFlowSwitch.setChecked(sharedPreferences.getBoolean(Constants.Key.IS_SAVE_FLOW_MODE, false));
+        feadBackTv = (TextView) findViewById(R.id.feadback);
+        checkUpdateLl = (LinearLayout) findViewById(R.id.check_update);
+        abountTv = (TextView) findViewById(R.id.abount);
+
+    }
+
+    private void initListeners() {
+
+        saveFlowSwitch.setOnCheckedChangeListener(this);
+        checkUpdateLl.setOnClickListener(this);
+        feadBackTv.setOnClickListener(this);
+        abountTv.setOnClickListener(this);
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+        if (buttonView.getId() == R.id.save_flow_switch) {
+            Constants.IS_SAVE_FLOW = isChecked;
+            sharedPreferences.edit().putBoolean(Constants.Key.IS_SAVE_FLOW_MODE, isChecked).apply();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+
+            case R.id.feadback: {
+
+            }
+            break;
+
+            case R.id.check_update: {
+
+            }
+            break;
+
+            case R.id.abount: {
+
+            }
+            break;
+
         }
 
     }
@@ -34,52 +96,4 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-
-        public static SettingsFragment getInstance() {
-            SettingsFragment settingsFragment = new SettingsFragment();
-            return settingsFragment;
-        }
-
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.preferences);
-        }
-
-        @Override
-        public void onResume() {
-            super.onResume();
-            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-        }
-
-
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
-            switch (key) {
-                case "day_night_mode":
-
-                    boolean isNight = sharedPreferences.getBoolean(key, false);
-                    if (isNight) {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    } else {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    }
-
-                    getActivity().recreate();
-
-                    break;
-            }
-
-        }
-    }
 }

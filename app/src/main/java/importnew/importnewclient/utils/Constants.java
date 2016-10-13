@@ -6,6 +6,8 @@ package importnew.importnewclient.utils;
  */
 public class Constants {
 
+    public static boolean IS_SAVE_FLOW = false;
+
     /**
      * 键
      */
@@ -45,6 +47,16 @@ public class Constants {
         public static final String UPDATE_INFO = "updateInfo";
 
         public static final String PICTURE_URL = "picture_url";
+
+        /**
+         * 省流量模式
+         */
+        public static String IS_SAVE_FLOW_MODE = "is_save_flow_mode";
+
+        /**
+         * 夜间模式
+         */
+        public static String IS_NIGHT_MODE = "is_night_mode";
     }
 
 

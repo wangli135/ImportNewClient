@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="90dp"
     app:cardBackgroundColor="#34ffff"
+    android:layout_margin="10dp"
     app:cardCornerRadius="5dp"
     app:cardElevation="10dp">
 
@@ -15,7 +16,7 @@
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="2"
-        android:padding="5dp"
+        android:padding="10dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:textSize="16sp" />
 

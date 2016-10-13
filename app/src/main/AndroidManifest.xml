@@ -39,6 +39,7 @@
             android:name=".ui.SearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:label="@string/search_result"
             android:name=".ui.SearchResultActivity"
             android:launchMode="singleTop">
             <intent-filter>

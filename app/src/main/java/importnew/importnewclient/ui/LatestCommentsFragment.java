@@ -69,8 +69,6 @@ public class LatestCommentsFragment extends BaseFragment {
         mAdapter = new HotArticleAdapter(getActivity(), mArticles);
         layoutManager = new LinearLayoutManager(getActivity());
         mRecycleView.setLayoutManager(layoutManager);
-//        mRecycleView.setItemAnimator(new DefaultItemAnimator());
-//        mRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
 
         mRecycleView.setAdapter(mAdapter);
 

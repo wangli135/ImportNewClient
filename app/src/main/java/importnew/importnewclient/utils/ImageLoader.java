@@ -85,7 +85,11 @@ public class ImageLoader {
         this.mListView = mListView;
     }
 
+    private Context mContext;
+
     private ImageLoader(Context context) {
+
+        this.mContext = context.getApplicationContext();
 
         //内存缓存
         int size = (int) (Runtime.getRuntime().maxMemory() / 8);
@@ -216,6 +220,10 @@ public class ImageLoader {
 
         if (TextUtils.isEmpty(imageUrl))
             return bitmap;
+
+        if (Constants.IS_SAVE_FLOW && !AppUtil.isWifi(mContext)) {
+            return bitmap;
+        }
 
         Response response = null;
         try {

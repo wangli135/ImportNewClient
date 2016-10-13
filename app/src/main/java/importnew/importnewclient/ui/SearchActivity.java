@@ -22,17 +22,6 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        try {
-//            Field field = toolbar.getClass().getDeclaredField("mTitleTextView");
-//            field.setAccessible(true);
-//            field.set(toolbar, null);
-//            toolbar.invalidate();
-//        } catch (NoSuchFieldException e) {
-//            e.printStackTrace();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        }
-
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

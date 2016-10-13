@@ -3,8 +3,6 @@ package importnew.importnewclient.application;
 import android.app.Application;
 import android.util.DisplayMetrics;
 
-import com.squareup.leakcanary.LeakCanary;
-
 import im.fir.sdk.FIR;
 
 /**
@@ -26,7 +24,6 @@ public class ImportNewApplication extends Application {
     public void onCreate() {
         super.onCreate();
         FIR.init(this);
-        LeakCanary.install(this);
         getWidthAndHeight();
 
     }

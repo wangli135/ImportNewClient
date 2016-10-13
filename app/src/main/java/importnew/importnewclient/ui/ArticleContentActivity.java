@@ -101,9 +101,12 @@ public class ArticleContentActivity extends AppCompatActivity {
                 if (isArticleUrl(url)) {
 
                     Response httpResponse = mSecondCache.getResponse(url);
-                    WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
-                    httpResponse.body().close();
-                    return webResourceResponse;
+                    if(httpResponse!=null){
+                        WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
+                        httpResponse.body().close();
+                        return webResourceResponse;
+                    }
+
                 }
 
                 return super.shouldInterceptRequest(view, request);
@@ -115,9 +118,12 @@ public class ArticleContentActivity extends AppCompatActivity {
                 if (isArticleUrl(url)) {
 
                     Response httpResponse = mSecondCache.getResponse(url);
-                    WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
-                    httpResponse.body().close();
-                    return webResourceResponse;
+                    if(httpResponse!=null){
+                        WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
+                        httpResponse.body().close();
+                        return webResourceResponse;
+                    }
+
                 }
 
                 return super.shouldInterceptRequest(view, url);

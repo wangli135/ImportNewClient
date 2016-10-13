@@ -7,9 +7,11 @@
     tools:context="importnew.importnewclient.ui.SearchResultActivity">
 
     <importnew.importnewclient.view.LoadMoreListView
+        android:divider="@drawable/listview_divider"
         android:id="@+id/search_result_lv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></importnew.importnewclient.view.LoadMoreListView>
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"></importnew.importnewclient.view.LoadMoreListView>
 
 
 </android.support.v4.widget.SwipeRefreshLayout>

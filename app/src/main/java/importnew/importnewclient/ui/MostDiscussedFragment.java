@@ -33,7 +33,6 @@ public class MostDiscussedFragment extends BaseFragment {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecycleView;
-    private List<Article> mArticles;
     private HotArticleAdapter mAdapter;
 
     private LinearLayoutManager layoutManager;
@@ -65,8 +64,6 @@ public class MostDiscussedFragment extends BaseFragment {
 
         layoutManager = new LinearLayoutManager(getActivity());
         mRecycleView.setLayoutManager(layoutManager);
-//        mRecycleView.setItemAnimator(new DefaultItemAnimator());
-//        mRecycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
 
         loadHotArticles(false);
 

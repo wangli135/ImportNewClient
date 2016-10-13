@@ -3,8 +3,6 @@ package importnew.importnewclient.utils;
 import android.content.Context;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import importnew.importnewclient.net.HttpManager;
 import okhttp3.CacheControl;
@@ -24,8 +22,6 @@ public class SecondCache {
     private OkHttpClient httpClient;
     private static SecondCache instance = null;
 
-    private Set<Call> callSet;
-
     public static SecondCache getInstance(Context context) {
 
         if (instance == null) {
@@ -43,17 +39,9 @@ public class SecondCache {
         //网络缓存
         httpClient = HttpManager.getInstance(context).getClient();
 
-        callSet = new HashSet<>();
-
     }
 
     public void cancelCalls() {
-        for (Call call : callSet) {
-            if (!call.isCanceled()) {
-                call.cancel();
-            }
-        }
-        callSet.clear();
     }
 
     /**
@@ -68,11 +56,11 @@ public class SecondCache {
         try {
             Request request = new Request.Builder().cacheControl(CacheControl.FORCE_CACHE).url(url).build();
             Call call = httpClient.newCall(request);
-            callSet.add(call);
             response = call.execute();
             if (response.isSuccessful()) {
                 return response.body().string();
             }
+
             return "";
         } catch (IOException e) {
             e.printStackTrace();
@@ -99,7 +87,6 @@ public class SecondCache {
                     new CacheControl.Builder().noCache().build()
             ).build();
             Call call = httpClient.newCall(request);
-            callSet.add(call);
             response = call.execute();
             if (response.isSuccessful()) {
 
@@ -126,7 +113,6 @@ public class SecondCache {
                     new CacheControl.Builder().noCache().build()
             ).build();
             Call call = httpClient.newCall(request);
-            callSet.add(call);
             Response response = call.execute();
             if (response.isSuccessful()) {
                 return response;
