@@ -29,7 +29,11 @@ public class AppUtil {
         String cachePath;
 
         if (externalStorageAvailable) {
-            cachePath = context.getExternalCacheDir().getPath();
+            File file = context.getExternalCacheDir();
+            if (file == null) {
+                cachePath = Environment.getDataDirectory().getPath();
+            } else
+                cachePath = context.getExternalCacheDir().getPath();
         } else {
             cachePath = context.getCacheDir().getPath();
         }
