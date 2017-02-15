@@ -15,7 +15,7 @@ import okio.BufferedSource;
 import okio.Okio;
 
 /**
- * 文章内容拦截器，将文章的HTML文档提取出想要的部分
+ * 文章内容拦截器
  * Created by Xingfeng on 2016/5/15.
  */
 public class ArticleBodyInterceptor implements Interceptor {

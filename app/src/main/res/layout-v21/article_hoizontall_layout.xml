@@ -2,7 +2,7 @@
 <!--一篇文章的水平布局，左为图片，右为内容-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="@color/colorBackground"
+    android:background="@drawable/article_item_bg"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     android:layout_height="122dp">

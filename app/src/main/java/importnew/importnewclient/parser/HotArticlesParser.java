@@ -14,50 +14,7 @@ import importnew.importnewclient.utils.Constants;
  */
 public class HotArticlesParser {
 
-    /**
-     * 解析本月热门文章
-     *
-     * @param html
-     * @return
-     */
-    public static List<Article> parserHotDiscussedArticles(String html) {
-        List<Article> articles = new ArrayList<>();
-        Article article = null;
-
-        Pattern pattern = Pattern.compile("id=\"tab-most-discussed.+?(id)", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(html);
-        String s = "";
-        while (matcher.find()) {
-            s = html.substring(matcher.start(), matcher.end());
-            return parserArticle(s);
-        }
-
-        return articles;
-    }
-
-
-    /**
-     * 解析年度热门文章
-     *
-     * @param html
-     * @return
-     */
-    public static List<Article> parserMostCommentsArticle(String html) {
-        List<Article> articles = new ArrayList<>();
-        Article article = null;
-
-        Pattern pattern = Pattern.compile("id=\"tab-latest-comments.+?(id)", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(html);
-        String s = "";
-        while (matcher.find()) {
-            s = html.substring(matcher.start(), matcher.end());
-            return parserArticle(s);
-        }
-
-        return articles;
-    }
-
-    private static List<Article> parserArticle(String html) {
+    public List<Article> parserArticle(String html) {
         List<Article> articles = new ArrayList<>();
 
         Pattern pattern = Pattern.compile("<a.+?(</a>)");

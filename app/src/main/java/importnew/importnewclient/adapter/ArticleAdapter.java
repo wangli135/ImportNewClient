@@ -190,7 +190,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
 
         private String imageUrl;
 
-
         @Override
         protected Bitmap doInBackground(String... params) {
 

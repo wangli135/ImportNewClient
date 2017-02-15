@@ -21,7 +21,12 @@ import importnew.importnewclient.utils.Constants;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener{
+        implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final int HOMEPAGE_INDEX = 0;
+    private static final int ALL_ARTICLE_INDEX = 1;
+    private static final int HOT_ARTICLE_INDEX = 2;
+    private static final int MORE_CONTENT_INDEX = 3;
 
     private int[] choicesId = {R.string.homepage, R.string.all_artciles, R.string.hot_articles, R.string.more_contents};
 
@@ -80,16 +85,16 @@ public class MainActivity extends AppCompatActivity
         mFragment = new HomePageFragment();
 
         switch (numOfFragment) {
-            case 0:
+            case HOMEPAGE_INDEX:
                 mFragment = new HomePageFragment();
                 break;
-            case 1:
+            case ALL_ARTICLE_INDEX:
                 mFragment = new AllArticlesFragment();
                 break;
-            case 2:
+            case HOT_ARTICLE_INDEX:
                 mFragment = new HotArticleFragment();
                 break;
-            case 3:
+            case MORE_CONTENT_INDEX:
                 mFragment = new MoreContentsFragment();
                 break;
         }
@@ -144,37 +149,39 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.homepage) {
 
-            toolbar.setTitle(choicesId[0]);
-            if (!(mFragment instanceof HomePageFragment))
+            toolbar.setTitle(choicesId[HOMEPAGE_INDEX]);
+            if (numOfFragment != HOMEPAGE_INDEX) {
                 mFragment = new HomePageFragment();
-            manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
-            numOfFragment = 0;
+                manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+                numOfFragment = HOMEPAGE_INDEX;
+            }
 
         } else if (id == R.id.all_artciles) {
 
-            toolbar.setTitle(choicesId[1]);
-            if (!(mFragment instanceof AllArticlesFragment))
+            toolbar.setTitle(choicesId[ALL_ARTICLE_INDEX]);
+            if (numOfFragment != ALL_ARTICLE_INDEX) {
                 mFragment = new AllArticlesFragment();
-            manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
-            numOfFragment = 1;
+                manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+                numOfFragment = ALL_ARTICLE_INDEX;
+            }
 
         } else if (id == R.id.hot_artciles) {
 
-            toolbar.setTitle(choicesId[2]);
-            if (!(mFragment instanceof HotArticleFragment))
+            toolbar.setTitle(choicesId[HOT_ARTICLE_INDEX]);
+            if (numOfFragment != HOT_ARTICLE_INDEX) {
                 mFragment = new HotArticleFragment();
-            manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
-            numOfFragment = 2;
-
+                manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+                numOfFragment = HOT_ARTICLE_INDEX;
+            }
         } else if (id == R.id.more_contents) {
 
-            toolbar.setTitle(choicesId[3]);
-            if (!(mFragment instanceof MoreContentsFragment))
+            toolbar.setTitle(choicesId[MORE_CONTENT_INDEX]);
+            if (numOfFragment != MORE_CONTENT_INDEX) {
                 mFragment = new MoreContentsFragment();
-            manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
-            numOfFragment = 3;
+                manager.beginTransaction().replace(R.id.main_contents, mFragment).commit();
+                numOfFragment = MORE_CONTENT_INDEX;
+            }
         }
-
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

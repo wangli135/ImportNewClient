@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="importnew.importnewclient.view.TestActivity">
+    tools:context="importnew.importnewclient.customview.TestActivity">
 
 
-    <importnew.importnewclient.view.LoadMoreListView
+    <importnew.importnewclient.customview.LoadMoreListView
         android:id="@+id/loadmore_lv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></importnew.importnewclient.view.LoadMoreListView>
+        android:layout_height="match_parent"></importnew.importnewclient.customview.LoadMoreListView>
 
 </RelativeLayout>

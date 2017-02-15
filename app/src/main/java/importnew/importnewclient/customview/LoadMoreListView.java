@@ -1,4 +1,4 @@
-package importnew.importnewclient.view;
+package importnew.importnewclient.customview;
 
 import android.annotation.TargetApi;
 import android.content.Context;

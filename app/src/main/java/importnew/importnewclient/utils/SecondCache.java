@@ -1,6 +1,7 @@
 package importnew.importnewclient.utils;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.io.IOException;
 
@@ -20,28 +21,10 @@ public class SecondCache {
 
     //网络缓存+硬盘缓存
     private OkHttpClient httpClient;
-    private static SecondCache instance = null;
 
-    public static SecondCache getInstance(Context context) {
-
-        if (instance == null) {
-            synchronized (SecondCache.class) {
-                if (instance == null)
-                    instance = new SecondCache(context);
-            }
-        }
-
-
-        return instance;
-    }
-
-    private SecondCache(Context context) {
+    public SecondCache(Context context) {
         //网络缓存
         httpClient = HttpManager.getInstance(context).getClient();
-
-    }
-
-    public void cancelCalls() {
     }
 
     /**
@@ -50,7 +33,7 @@ public class SecondCache {
      * @param url
      * @return
      */
-    public String getResponseFromDiskCache(String url) {
+    private String getResponseFromDiskCache(String url) {
 
         Response response = null;
         try {
@@ -106,6 +89,15 @@ public class SecondCache {
         }
     }
 
+    public String getResponseString(String url) {
+
+        //Step 1：从缓存获取响应
+        String result = getResponseFromDiskCache(url);
+        //Step 2: 从网络获取响应
+        if (TextUtils.isEmpty(result))
+            result = getResponseFromNetwork(url);
+        return result;
+    }
 
     public Response getResponse(String url) {
         try {

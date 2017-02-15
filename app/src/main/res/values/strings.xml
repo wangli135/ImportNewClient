@@ -13,7 +13,7 @@
 
     <string name="network_unable">网络连接不可用</string>
 
-    <array name="pageTitle">
+    <array name="allArticlesPageTitle">
         <item>所有文章</item>
         <item>资讯</item>
         <item>Web</item>

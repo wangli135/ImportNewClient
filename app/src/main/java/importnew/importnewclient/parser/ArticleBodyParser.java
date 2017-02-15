@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import importnew.importnewclient.utils.Constants.Regex;
 
 /**
- * 解析一篇文章
+ * 从html页面中解析出一篇文章
  * Created by Xingfeng on 2016/5/5.
  */
 public class ArticleBodyParser {

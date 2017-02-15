@@ -49,7 +49,7 @@
                 android:orientation="horizontal">
 
                 <!--第一篇文章-->
-                <importnew.importnewclient.view.VerticalArticleView
+                <importnew.importnewclient.customview.VerticalArticleView
                     android:id="@+id/first_article"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -65,13 +65,13 @@
                     android:padding="5dp">
 
 
-                    <importnew.importnewclient.view.VerticalArticleView
+                    <importnew.importnewclient.customview.VerticalArticleView
                         android:id="@+id/second_article"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
 
-                    <importnew.importnewclient.view.VerticalArticleView
+                    <importnew.importnewclient.customview.VerticalArticleView
                         android:id="@+id/third_article"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
@@ -89,20 +89,20 @@
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <importnew.importnewclient.view.VerticalArticleView
+                <importnew.importnewclient.customview.VerticalArticleView
                     android:id="@+id/fourth_article"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:padding="5dp"></importnew.importnewclient.view.VerticalArticleView>
+                    android:padding="5dp"></importnew.importnewclient.customview.VerticalArticleView>
 
 
-                <importnew.importnewclient.view.VerticalArticleView
+                <importnew.importnewclient.customview.VerticalArticleView
                     android:id="@+id/fifth_article"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:padding="5dp"></importnew.importnewclient.view.VerticalArticleView>
+                    android:padding="5dp"></importnew.importnewclient.customview.VerticalArticleView>
 
 
             </LinearLayout>

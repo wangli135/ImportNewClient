@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <importnew.importnewclient.view.ProgressWebView
+    <importnew.importnewclient.customview.ProgressWebView
         android:id="@+id/article_webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></importnew.importnewclient.view.ProgressWebView>
+        android:layout_height="match_parent"></importnew.importnewclient.customview.ProgressWebView>
 
     <ViewStub
         android:id="@+id/stub_error"

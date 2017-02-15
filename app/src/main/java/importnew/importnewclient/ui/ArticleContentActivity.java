@@ -22,7 +22,7 @@ import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.utils.Constants;
 import importnew.importnewclient.utils.SecondCache;
-import importnew.importnewclient.view.ProgressWebView;
+import importnew.importnewclient.customview.ProgressWebView;
 import okhttp3.Response;
 
 /**
@@ -49,7 +49,7 @@ public class ArticleContentActivity extends AppCompatActivity {
         mLoadUrl = mArticle.getUrl();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(mArticle.getTitle());
-        mSecondCache = SecondCache.getInstance(this);
+        mSecondCache = new SecondCache(this);
 
         initViews();
 
@@ -98,7 +98,7 @@ public class ArticleContentActivity extends AppCompatActivity {
                 if (isArticleUrl(url)) {
 
                     Response httpResponse = mSecondCache.getResponse(url);
-                    if(httpResponse!=null){
+                    if (httpResponse != null) {
                         WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
                         httpResponse.body().close();
                         return webResourceResponse;
@@ -115,7 +115,7 @@ public class ArticleContentActivity extends AppCompatActivity {
                 if (isArticleUrl(url)) {
 
                     Response httpResponse = mSecondCache.getResponse(url);
-                    if(httpResponse!=null){
+                    if (httpResponse != null) {
                         WebResourceResponse webResourceResponse = new WebResourceResponse("text/html", "utf-8", httpResponse.body().byteStream());
                         httpResponse.body().close();
                         return webResourceResponse;

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <importnew.importnewclient.view.LoadMoreListView
+    <importnew.importnewclient.customview.LoadMoreListView
         android:smoothScrollbar="false"
         android:footerDividersEnabled="false"
         android:divider="@drawable/listview_divider"
@@ -13,6 +13,6 @@
         android:scrollbars="vertical"
         android:id="@+id/articles_lv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></importnew.importnewclient.view.LoadMoreListView>
+        android:layout_height="match_parent"></importnew.importnewclient.customview.LoadMoreListView>
 
 </android.support.v4.widget.SwipeRefreshLayout>

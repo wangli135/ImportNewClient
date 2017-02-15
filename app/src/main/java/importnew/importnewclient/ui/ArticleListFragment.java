@@ -9,42 +9,28 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import importnew.importnewclient.R;
-import importnew.importnewclient.adapter.ArticleAdapter;
-import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.parser.ArticlesParser;
+import importnew.importnewclient.customview.LoadMoreListView;
+import importnew.importnewclient.presenter.ArticleListPresenter;
 import importnew.importnewclient.utils.Constants;
-import importnew.importnewclient.utils.SecondCache;
-import importnew.importnewclient.view.LoadMoreListView;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import importnew.importnewclient.view.IArticieListView;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ArticleListFragment extends BaseFragment implements ListView.OnItemClickListener {
+public class ArticleListFragment extends BaseFragment implements ListView.OnItemClickListener, IArticieListView {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LoadMoreListView mListView;
-
-    private ArrayList<Article> mArticles;
-    private ArticleAdapter mAdapter;
-
     private boolean isLoading;//加载更多的标志
 
     /**
@@ -59,6 +45,8 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
 
     private int selection;//ListView选中Item位置
 
+    private ArticleListPresenter mArticleListPresenter;
+
     public ArticleListFragment() {
     }
 
@@ -70,16 +58,15 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         if (savedInstanceState != null) {
             category = (String) savedInstanceState.get(Constants.Key.ARTICLE_BASE_URL);
             selection = (Integer) savedInstanceState.get(Constants.Key.SELECTION);
-            mArticles = savedInstanceState.getParcelableArrayList(Constants.Key.ARTICLE_LIST);
             pageNum = savedInstanceState.getInt(Constants.Key.PAGE_NUM);
         } else {
             pageNum = 1;
             selection = 0;
-            mArticles = null;
         }
         IntentFilter intentFilter = new IntentFilter("com.importnew.listview.selection");
         myReceiver = new ListViewSelectionReceiver();
         mContext.registerReceiver(myReceiver, intentFilter);
+
     }
 
     public static ArticleListFragment newInstance(String baseurl) {
@@ -104,11 +91,11 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
         mSwipeRefreshLayout.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
         mSwipeRefreshLayout.setEnabled(true);
-
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshArticles();
+                String url = category + 1;
+                mArticleListPresenter.refreshArticles(url);
             }
         });
 
@@ -124,74 +111,10 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
             }
         });
 
-        mSecondCache = SecondCache.getInstance(getContext());
-        if (mArticles == null) {
-            mArticles = new ArrayList<>();
-        }
-        mAdapter = new ArticleAdapter(getParentFragment().getActivity(), mArticles, mListView);
-        mListView.setAdapter(mAdapter);
+        mArticleListPresenter = new ArticleListPresenter(this, mListView);
         mListView.setSelection(selection);
         mSwipeRefreshLayout.setRefreshing(true);
         loadArticles();
-
-    }
-
-
-    private void refreshArticles() {
-
-        mSwipeRefreshLayout.setRefreshing(true);
-        Observable<List<Article>> observable = Observable.create(new Observable.OnSubscribe<List<Article>>() {
-            @Override
-            public void call(Subscriber<? super List<Article>> subscriber) {
-
-                String html = mSecondCache.getResponseFromNetwork(category + 1);
-
-                if (TextUtils.isEmpty(html))
-                    subscriber.onError(new Exception("刷新出错"));
-                else {
-                    List<Article> articles = ArticlesParser.parserArtciles(html);
-                    subscriber.onNext(articles);
-                    subscriber.onCompleted();
-                }
-
-            }
-        });
-
-        observable.onBackpressureBuffer().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<List<Article>>() {
-            @Override
-            public void onCompleted() {
-
-                mSwipeRefreshLayout.setRefreshing(false);
-                mAdapter.notifyDataSetChanged();
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-                mSwipeRefreshLayout.setRefreshing(false);
-                Toast.makeText(getActivity(), "加载页面出错，请重新刷新", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onNext(List<Article> articles) {
-
-                if (mArticles.isEmpty()) {
-                    mArticles.addAll(articles);
-                } else {
-                    for (Article article : articles) {
-                        if (!mArticles.get(0).equals(article))
-                            mArticles.add(article);
-                        else
-                            break;
-                    }
-                }
-
-
-            }
-        });
 
     }
 
@@ -200,8 +123,8 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
         super.onPause();
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
-        if (mAdapter != null)
-            mAdapter.cancelAllTasks();
+        if (mArticleListPresenter != null)
+            mArticleListPresenter.cancelAllTasks();
     }
 
     @Override
@@ -211,13 +134,13 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
             mSwipeRefreshLayout.setRefreshing(false);
         if (myReceiver != null)
             mContext.unregisterReceiver(myReceiver);
-        mAdapter.cancelAllTasks();
+        if (mArticleListPresenter != null)
+            mArticleListPresenter.cancelAllTasks();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(Constants.Key.ARTICLE_BASE_URL, category);
-        outState.putParcelableArrayList(Constants.Key.ARTICLE_LIST, mArticles);
         outState.putInt(Constants.Key.SELECTION, mListView.getSelectedItemPosition());
         outState.putInt(Constants.Key.PAGE_NUM, pageNum);
         super.onSaveInstanceState(outState);
@@ -227,78 +150,48 @@ public class ArticleListFragment extends BaseFragment implements ListView.OnItem
     private void loadArticles() {
         category = (String) getArguments().get(Constants.Key.ARTICLE_BASE_URL);
         String url = category + (pageNum++);
-
-
-        parserArticles(url).onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<Article>>() {
-                    @Override
-                    public void onCompleted() {
-
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        mAdapter.notifyDataSetChanged();
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        if (!isLoading)
-                            Toast.makeText(getActivity(), "加载内容发生错误，请重试", Toast.LENGTH_SHORT).show();
-                        else {
-                            mListView.setNoContentToLoad();
-                        }
-
-                    }
-
-                    @Override
-                    public void onNext(List<Article> articleList) {
-
-                        if (mArticles.isEmpty())
-                            mArticles.addAll(articleList);
-                        else {
-                            for (Article article : articleList) {
-                                if (!mArticles.get(mArticles.size() - 1).equals(article))
-                                    mArticles.add(article);
-                            }
-                        }
-
-                    }
-                });
+        mArticleListPresenter.loadArticles(url);
     }
 
-    private Observable<List<Article>> parserArticles(final String url) {
-
-        return Observable.create(new Observable.OnSubscribe<List<Article>>() {
-            @Override
-            public void call(Subscriber<? super List<Article>> subscriber) {
-
-                String html = mSecondCache.getResponseFromDiskCache(url);
-                if (TextUtils.isEmpty(html))
-                    html = mSecondCache.getResponseFromNetwork(url);
-
-                if (TextUtils.isEmpty(html))
-                    subscriber.onError(new Exception("加载页面无法解析"));
-                else {
-                    List<Article> articles = ArticlesParser.parserArtciles(html);
-                    subscriber.onNext(articles);
-                    subscriber.onCompleted();
-                }
-
-            }
-        });
-
-
-    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        mArticleListPresenter.showArticleBody(position);
+    }
 
-        Article article = mArticles.get(position);
-        Intent intent = new Intent(getParentFragment().getActivity(), ArticleContentActivity.class);
-        intent.putExtra(Constants.Key.ARTICLE, article);
-        getActivity().startActivity(intent);
+    @Override
+    public void setAdapter(ListAdapter adapter) {
+        mListView.setAdapter(adapter);
+    }
 
+    @Override
+    public boolean isLoading() {
+        return isLoading;
+    }
+
+    @Override
+    public void setNoContentToLoad() {
+        mListView.setNoContentToLoad();
+    }
+
+    @Override
+    public void setSelection(int selection) {
+        mListView.setSelection(selection);
+    }
+
+    @Override
+    public void setLoading(boolean isLoading) {
+        this.isLoading = isLoading;
+    }
+
+    @Override
+    public void setRefreshing(boolean isRefresh) {
+        mSwipeRefreshLayout.setRefreshing(isRefresh);
+    }
+
+    @Override
+    public void showErrorInfo(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
 

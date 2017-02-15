@@ -1,4 +1,4 @@
-package importnew.importnewclient.view;
+package importnew.importnewclient.customview;
 
 import android.content.Context;
 import android.graphics.Bitmap;

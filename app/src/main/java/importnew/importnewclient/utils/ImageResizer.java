@@ -1,11 +1,9 @@
 package importnew.importnewclient.utils;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-import java.io.FileDescriptor;
 import java.io.InputStream;
 
 /**
@@ -17,37 +15,6 @@ public class ImageResizer {
     private static final String TAG = "ImageResizer";
 
     public ImageResizer() {
-    }
-
-    public Bitmap decodeSampledBitmapFromResource(Resources res,
-                                                  int resId, int reqWidth, int reqHeight) {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth,
-                reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
-
-    public Bitmap decodeSampledBitmapFromFileDescriptor(FileDescriptor fd, int reqWidth, int reqHeight) {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFileDescriptor(fd, null, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth,
-                reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFileDescriptor(fd, null, options);
     }
 
     public Bitmap decodeSampledBitmapFromInputStream(InputStream in, int reqWidth, int reqHeight) {
@@ -66,21 +33,6 @@ public class ImageResizer {
         return bitmap;
     }
 
-    public Bitmap decodeSampledBitmapFromByteArray(byte[] array, int reqWidth, int reqHeight) {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(array, reqHeight, reqWidth, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth,
-                reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeByteArray(array, reqHeight, reqWidth, options);
-        return bitmap;
-    }
 
     public int calculateInSampleSize(BitmapFactory.Options options,
                                      int reqWidth, int reqHeight) {

@@ -13,7 +13,7 @@ import importnew.importnewclient.utils.Constants.Regex;
  * 解析Importnew首页
  * Created by Xingfeng on 2016/4/28.
  */
-public class HomePagerParser {
+public class HomePagerParser implements ArticlesParser {
 
 
     /**
@@ -22,7 +22,7 @@ public class HomePagerParser {
      * @param html
      * @return
      */
-    public static List<Article> parserHomePage(String html) {
+    public List<Article> parser(String html) {
 
         List<Article> articleList = new ArrayList<>();
         Article article = null;
@@ -38,7 +38,7 @@ public class HomePagerParser {
                 article = new Article();
 
                 //文章URL
-                innerPattern = Pattern.compile(Regex.HOME_ARTICLE_URL,Pattern.DOTALL);
+                innerPattern = Pattern.compile(Regex.HOME_ARTICLE_URL, Pattern.DOTALL);
                 innerMatcher = innerPattern.matcher(temp);
                 while (innerMatcher.find()) {
                     article.setUrl(temp.substring(innerMatcher.start() + 6, innerMatcher.end() - 1));

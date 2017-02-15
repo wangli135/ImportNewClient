@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,40 +17,25 @@ import java.util.List;
 import importnew.importnewclient.R;
 import importnew.importnewclient.adapter.HomePageAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
-import importnew.importnewclient.net.URLManager;
-import importnew.importnewclient.parser.HomePagerParser;
-import importnew.importnewclient.utils.ArctileBlockConverter;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import importnew.importnewclient.presenter.HomePagePresenter;
+import importnew.importnewclient.view.IHomePageView;
 
 
 /**
  * 首页Fragment
  * A simple {@link Fragment} subclass.
  */
-public class HomePageFragment extends BaseFragment {
-
+public class HomePageFragment extends BaseFragment implements IHomePageView {
 
     private SwipeRefreshLayout mRefreshLayout;
-
-    private List<ArticleBlock> articles;
-
     private ListView mArticleBlokcListView;
     private HomePageAdapter mHomePageAdapter;
-
-
-    public HomePageFragment() {
-    }
-
+    private HomePagePresenter mHomePagePresenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home_page, container, false);
-
     }
 
     @Override
@@ -66,19 +50,34 @@ public class HomePageFragment extends BaseFragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
-                getHtmlAndParser(true);
-
-
+                mHomePagePresenter.getHtmlAndParser(true);
             }
         });
 
         mArticleBlokcListView = (ListView) view.findViewById(R.id.article_block_listview);
 
-        getHtmlAndParser(false);
+        mHomePagePresenter = new HomePagePresenter(this);
+
+        mHomePagePresenter.getHtmlAndParser(false);
 
     }
 
+
+    @Override
+    public void setRefreshing(boolean isRefresh) {
+        mRefreshLayout.setRefreshing(isRefresh);
+    }
+
+    @Override
+    public void showErrorInfo(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void setAdapter(List<ArticleBlock> articleBlocks) {
+        mHomePageAdapter = new HomePageAdapter(getActivity(), articleBlocks);
+        mArticleBlokcListView.setAdapter(mHomePageAdapter);
+    }
 
     @Override
     public void onPause() {
@@ -98,75 +97,6 @@ public class HomePageFragment extends BaseFragment {
             mHomePageAdapter.cancelAllTasks();
         }
 
-
     }
-
-    /**
-     * 获取文章首页
-     *
-     * @param isRefresh 是否属于刷新
-     */
-    private void getHtmlAndParser(boolean isRefresh) {
-
-        mRefreshLayout.setRefreshing(true);
-        getArticles(isRefresh).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<ArticleBlock>>() {
-                    @Override
-                    public void onCompleted() {
-
-                        mRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        mRefreshLayout.setRefreshing(false);
-                        Toast.makeText(mContext, "加载首页发生错误，请刷新重试", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNext(List<ArticleBlock> articleBlocks) {
-
-                        mHomePageAdapter = new HomePageAdapter(getActivity(), articleBlocks);
-                        mArticleBlokcListView.setAdapter(mHomePageAdapter);
-
-                    }
-                });
-
-    }
-
-
-    /**
-     * 获取首页文章块
-     *
-     * @param isRefresh 是否刷新操作
-     * @return 解析出来的文章块
-     */
-    private Observable<List<ArticleBlock>> getArticles(final boolean isRefresh) {
-
-        return Observable.create(new Observable.OnSubscribe<List<ArticleBlock>>() {
-            @Override
-            public void call(Subscriber<? super List<ArticleBlock>> subscriber) {
-
-                String html = "";
-
-                if (!isRefresh)
-                    html = mSecondCache.getResponseFromDiskCache(URLManager.HOMEPAGE);
-
-                if (TextUtils.isEmpty(html)) {
-                    html = mSecondCache.getResponseFromNetwork(URLManager.HOMEPAGE);
-                }
-
-                if (TextUtils.isEmpty(html))
-                    subscriber.onError(new NullPointerException("未解析到文章主体"));
-                else
-                    subscriber.onNext(ArctileBlockConverter.converter(HomePagerParser.parserHomePage(html)));
-
-                subscriber.onCompleted();
-            }
-        });
-
-    }
-
-
 
 }
