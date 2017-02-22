@@ -1,8 +1,6 @@
 package importnew.importnewclient.view;
 
-import java.util.List;
-
-import importnew.importnewclient.bean.ArticleBlock;
+import android.widget.ListAdapter;
 
 /**
  * 主页Fragment对应的View接口
@@ -13,8 +11,8 @@ public interface IHomePageView extends IBaseView {
     /**
      * 设置ListView的Adapter
      *
-     * @param articleBlocks
+     * @param adapter
      */
-    void setAdapter(List<ArticleBlock> articleBlocks);
+    void setAdapter(ListAdapter adapter);
 
 }

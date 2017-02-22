@@ -3,8 +3,10 @@ package importnew.importnewclient.presenter;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import importnew.importnewclient.adapter.HomePageAdapter;
 import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.net.URLManager;
 import importnew.importnewclient.parser.ArticlesParser;
@@ -26,48 +28,34 @@ public class HomePagePresenter {
 
     private IHomePageView mHomePageView;
     private SecondCache mSecondCache;
+    private List<ArticleBlock> mArticleBlocks;
+    private HomePageAdapter mHomePageAdapter;
 
     public HomePagePresenter(IHomePageView mHomePageView) {
         this.mHomePageView = mHomePageView;
         Fragment fragment = (Fragment) mHomePageView;
         mSecondCache = new SecondCache(fragment.getActivity());
+
+        mArticleBlocks = new ArrayList<>();
+        mHomePageAdapter = new HomePageAdapter(fragment.getActivity(), mArticleBlocks);
+        mHomePageView.setAdapter(mHomePageAdapter);
     }
 
+    public void cancelAllTasks() {
+        if (mHomePageAdapter != null) {
+            mHomePageAdapter.cancelAllTasks();
+        }
+    }
 
-    public void getHtmlAndParser(boolean isRefresh) {
+    public void flushCache() {
+        if (mHomePageAdapter != null) {
+            mHomePageAdapter.flushCache();
+        }
+    }
+
+    public void getHtmlAndParser(final boolean isRefresh) {
         mHomePageView.setRefreshing(true);
-        getArticles(isRefresh).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<ArticleBlock>>() {
-                    @Override
-                    public void onCompleted() {
-
-                        mHomePageView.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        mHomePageView.setRefreshing(false);
-                        mHomePageView.showErrorInfo("加载首页发生错误，请刷新重试");
-                    }
-
-                    @Override
-                    public void onNext(List<ArticleBlock> articleBlocks) {
-
-                        mHomePageView.setAdapter(articleBlocks);
-
-                    }
-                });
-    }
-
-    /**
-     * 获取首页文章块
-     *
-     * @param isRefresh 是否刷新操作
-     * @return 解析出来的文章块
-     */
-    private Observable<List<ArticleBlock>> getArticles(final boolean isRefresh) {
-
-        return Observable.create(new Observable.OnSubscribe<List<ArticleBlock>>() {
+        Observable.create(new Observable.OnSubscribe<List<ArticleBlock>>() {
             @Override
             public void call(Subscriber<? super List<ArticleBlock>> subscriber) {
 
@@ -90,7 +78,28 @@ public class HomePagePresenter {
 
                 subscriber.onCompleted();
             }
-        });
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<ArticleBlock>>() {
+                    @Override
+                    public void onCompleted() {
 
+                        mHomePageView.setRefreshing(false);
+                        mHomePageAdapter.notifyDataSetChanged();
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mHomePageView.setRefreshing(false);
+                        mHomePageView.showErrorInfo("加载首页发生错误，请刷新重试");
+                    }
+
+                    @Override
+                    public void onNext(List<ArticleBlock> articleBlocks) {
+
+                        mArticleBlocks.clear();
+                        mArticleBlocks.addAll(articleBlocks);
+                    }
+                });
     }
 }

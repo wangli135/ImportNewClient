@@ -9,14 +9,11 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.List;
-
 import importnew.importnewclient.R;
-import importnew.importnewclient.adapter.HomePageAdapter;
-import importnew.importnewclient.bean.ArticleBlock;
 import importnew.importnewclient.presenter.HomePagePresenter;
 import importnew.importnewclient.view.IHomePageView;
 
@@ -29,7 +26,6 @@ public class HomePageFragment extends BaseFragment implements IHomePageView {
 
     private SwipeRefreshLayout mRefreshLayout;
     private ListView mArticleBlokcListView;
-    private HomePageAdapter mHomePageAdapter;
     private HomePagePresenter mHomePagePresenter;
 
     @Override
@@ -74,29 +70,22 @@ public class HomePageFragment extends BaseFragment implements IHomePageView {
     }
 
     @Override
-    public void setAdapter(List<ArticleBlock> articleBlocks) {
-        mHomePageAdapter = new HomePageAdapter(getActivity(), articleBlocks);
-        mArticleBlokcListView.setAdapter(mHomePageAdapter);
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
 
         mRefreshLayout.setRefreshing(false);
-
+        mHomePagePresenter.flushCache();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         mRefreshLayout.setRefreshing(false);
-
-        if (mHomePageAdapter != null) {
-            mHomePageAdapter.cancelAllTasks();
-        }
-
+        mHomePagePresenter.cancelAllTasks();
     }
 
+    @Override
+    public void setAdapter(ListAdapter adapter) {
+        mArticleBlokcListView.setAdapter(adapter);
+    }
 }

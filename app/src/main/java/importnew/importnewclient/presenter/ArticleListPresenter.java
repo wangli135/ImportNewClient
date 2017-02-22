@@ -50,9 +50,25 @@ public class ArticleListPresenter {
      *
      * @param url 文章列表地址
      */
-    public void loadArticles(String url) {
+    public void loadArticles(final String url) {
 
-        parserArticles(url).onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        Observable.create(new Observable.OnSubscribe<List<Article>>() {
+            @Override
+            public void call(Subscriber<? super List<Article>> subscriber) {
+
+                String html = mSecondCache.getResponseString(url);
+
+                if (TextUtils.isEmpty(html))
+                    subscriber.onError(new Exception("加载页面无法解析"));
+                else {
+                    ArticlesParser parser = new CategoryParser();
+                    List<Article> articles = parser.parser(html);
+                    subscriber.onNext(articles);
+                    subscriber.onCompleted();
+                }
+
+            }
+        }).onBackpressureBuffer().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<List<Article>>() {
                     @Override
                     public void onCompleted() {
@@ -90,29 +106,6 @@ public class ArticleListPresenter {
 
                     }
                 });
-
-    }
-
-    private Observable<List<Article>> parserArticles(final String url) {
-
-        return Observable.create(new Observable.OnSubscribe<List<Article>>() {
-            @Override
-            public void call(Subscriber<? super List<Article>> subscriber) {
-
-                String html = mSecondCache.getResponseString(url);
-
-                if (TextUtils.isEmpty(html))
-                    subscriber.onError(new Exception("加载页面无法解析"));
-                else {
-                    ArticlesParser parser = new CategoryParser();
-                    List<Article> articles = parser.parser(html);
-                    subscriber.onNext(articles);
-                    subscriber.onCompleted();
-                }
-
-            }
-        });
-
 
     }
 
