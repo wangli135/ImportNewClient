@@ -3,8 +3,6 @@ package importnew.importnewclient.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +12,16 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
 import importnew.importnewclient.bean.ArticleBlock;
+import importnew.importnewclient.loader.ImageAware;
+import importnew.importnewclient.loader.ImageLoader;
 import importnew.importnewclient.ui.ArticleContentActivity;
 import importnew.importnewclient.utils.Constants;
-import importnew.importnewclient.utils.ImageLoader;
+import importnew.importnewclient.utils.DisplayUtil;
 
 /**
  * Created by Xingfeng on 2016/5/16.
@@ -37,11 +35,6 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
 
     private ListView mListView;
 
-    /**
-     * 记录所有正在下载或等待下载的任务
-     */
-    private Set<BitmapWorkerTask> taskCollection;
-
     private ImageLoader mImageLoader;
 
     private Context mContext;
@@ -53,8 +46,7 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         mArticleBlock = articleBlock;
         articleList = mArticleBlock.getArticles();
 
-        taskCollection = new HashSet<>();
-        mImageLoader = ImageLoader.getInstance(context.getApplicationContext());
+        mImageLoader = ImageLoader.getInstance(context);
         listView.setOnItemClickListener(this);
     }
 
@@ -105,21 +97,16 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
         return view;
     }
 
-    public void loadBitmaps(ImageView articleImgView, String imageUrl) {
+    public void loadBitmaps(ImageView imageView, String url) {
 
-        try {
-
-            Bitmap bitmap = mImageLoader.getBitmapFromMemory(imageUrl);
-            if (bitmap == null) {
-                BitmapWorkerTask task = new BitmapWorkerTask(articleImgView);
-                taskCollection.add(task);
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, imageUrl);
-            } else if (articleImgView != null && bitmap != null) {
-                articleImgView.setImageBitmap(bitmap);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (url == null) {
+            imageView.setVisibility(View.GONE);
         }
+
+        int width = DisplayUtil.screenWidth(mContext);
+        int height = width / 4;
+        ImageAware imageAware = new ImageAware(url, imageView, width, height);
+        mImageLoader.loadBitmap(url, imageAware);
 
     }
 
@@ -135,38 +122,6 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
 
     }
 
-    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
-
-        private ImageView mImageView;
-
-        public BitmapWorkerTask(ImageView mImageView) {
-            this.mImageView = mImageView;
-        }
-
-        /**
-         * 图片的URL地址
-         */
-        private String imageUrl;
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            imageUrl = params[0];
-
-            Bitmap bitmap = mImageLoader.getBitmap(imageUrl);
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-
-            if (mImageView != null && bitmap != null) {
-                mImageView.setImageBitmap(bitmap);
-            }
-            taskCollection.remove(this);
-
-        }
-    }
 
     /**
      * 将缓存记录同步到journal文件中
@@ -179,11 +134,6 @@ public class ArticleBlockAdapter extends BaseAdapter implements AdapterView.OnIt
      * 取消所有正在下载或等待下载的任务
      */
     public void cancelAllTasks() {
-        if (taskCollection != null) {
-            for (BitmapWorkerTask task : taskCollection) {
-                task.cancel(true);
-            }
-        }
     }
 
 

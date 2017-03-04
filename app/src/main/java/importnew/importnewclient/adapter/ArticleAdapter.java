@@ -1,8 +1,6 @@
 package importnew.importnewclient.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -14,13 +12,13 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import importnew.importnewclient.R;
 import importnew.importnewclient.bean.Article;
-import importnew.importnewclient.utils.ImageLoader;
+import importnew.importnewclient.loader.ImageAware;
+import importnew.importnewclient.loader.ImageLoader;
+import importnew.importnewclient.utils.DisplayUtil;
 
 
 /**
@@ -32,8 +30,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
     private LayoutInflater mInflater;
 
     private ImageLoader mImageLoader;
-
-    private Set<BitmapWorkerTask> tasks;
 
     private Context mContext;
 
@@ -52,16 +48,13 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         this.articles = articles;
         mContext = context;
         mInflater = LayoutInflater.from(context);
-        mImageLoader = ImageLoader.getInstance(context.getApplicationContext());
-        tasks = new HashSet<>();
+        mImageLoader = ImageLoader.getInstance(context);
 
         mVelocityTracker = VelocityTracker.obtain();
 
         mListView = listView;
         listView.setOnTouchListener(this);
         listView.setOnScrollListener(this);
-
-        mImageLoader.setListView(mListView);
 
     }
 
@@ -105,7 +98,6 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         viewHolder.img.setImageResource(R.drawable.emptyview);
         viewHolder.commentNum.setText(article.getCommentNum());
         viewHolder.date.setText(article.getDate());
-        viewHolder.img.setTag(article.getImgUrl());
 
         if (canLoadBitmaps)
             loadBitmaps(article.getImgUrl(), viewHolder.img);
@@ -119,25 +111,15 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
             imageView.setVisibility(View.GONE);
         }
 
-        //Step 1：从内存中检索
-        Bitmap bitmap = mImageLoader.getBitmapFromMemory(url);
-        if (bitmap != null && imageView != null) {
-            imageView.setImageBitmap(bitmap);
-        } else {
-            //Step 2:从硬盘中获取
-            BitmapWorkerTask task = new BitmapWorkerTask();
-            tasks.add(task);
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
-        }
+        int width = DisplayUtil.dp2sp(mContext, 48);
+        int height = width;
+        ImageAware imageAware = new ImageAware(url, imageView, width, height);
+        mImageLoader.loadBitmap(url, imageAware);
 
     }
 
     public void cancelAllTasks() {
 
-        for (BitmapWorkerTask task : tasks) {
-            if (!task.isCancelled())
-                task.cancel(true);
-        }
 
     }
 
@@ -182,35 +164,4 @@ public class ArticleAdapter extends BaseAdapter implements View.OnTouchListener,
         TextView date;
     }
 
-
-    /**
-     * 获取Bitmap，先从硬盘缓存中，再从网络
-     */
-    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
-
-        private String imageUrl;
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-
-            imageUrl = params[0];
-
-            Bitmap bitmap = mImageLoader.getBitmap(imageUrl);
-
-            return bitmap;
-
-        }
-
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-            ImageView imageView = (ImageView) mListView.findViewWithTag(imageUrl);
-            if (bitmap != null && imageView != null) {
-                imageView.setImageBitmap(bitmap);
-            }
-            tasks.remove(this);
-        }
-
-    }
 }

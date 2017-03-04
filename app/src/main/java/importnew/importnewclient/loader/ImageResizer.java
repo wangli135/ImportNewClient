@@ -1,9 +1,10 @@
-package importnew.importnewclient.utils;
+package importnew.importnewclient.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -18,17 +19,26 @@ public class ImageResizer {
     }
 
     public Bitmap decodeSampledBitmapFromInputStream(InputStream in, int reqWidth, int reqHeight) {
-        // First decode with inJustDecodeBounds=true to check dimensions
+        try {
+            in.reset();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(in, null, options);
 
-        // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth,
                 reqHeight);
 
-        // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
+
+        try {
+            in.reset();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
         return bitmap;
     }
@@ -40,7 +50,6 @@ public class ImageResizer {
             return 1;
         }
 
-        // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
         Log.d(TAG, "origin, w= " + width + " h=" + height);

@@ -22,7 +22,7 @@ public class HttpManager {
         if (instance == null) {
             synchronized (HttpManager.class) {
                 if (instance == null) {
-                    instance = new HttpManager(context);
+                    instance = new HttpManager(context.getApplicationContext());
                 }
             }
         }
