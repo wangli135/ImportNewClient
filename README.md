@@ -10,4 +10,6 @@
 3. 利用OkHttp自带的缓存对响应对二级缓存，对图片增加内存缓存实现三级缓存
 4. 编写ImgeLoader进行图片加载
 5. 利用RxAndroid进行异步的网络调用并更新界面
-6. 使用MVP模式对应用进行重构
+6. 使用MVP模式对应用进行重构  
+## 展示  
+![运行效果](https://github.com/wangli135/ImportNewClient/blob/master/app/screenshot/app_demo.gif)
